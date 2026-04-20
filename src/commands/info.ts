@@ -1,92 +1,80 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
-import { XMLParser } from 'fast-xml-parser';
+import AdmZip from 'adm-zip';
 import { resolveWorkflowPath } from '../utils/workflow';
+import { parseWorkflowMetadata, WorkflowMetadata } from '../utils/knime-parser';
 
 interface InfoOptions {
   workflow: string;
   path?: string;
 }
 
-interface KnimeEntry {
-  '@_key': string;
-  '@_value': string;
-  '@_type': string;
+function displayInfo(metadata: WorkflowMetadata, systemInfo: { path: string, size: number, mtime: Date }) {
+  console.log('\n=== Workflow System Info ===');
+  console.log(`Path:      ${systemInfo.path}`);
+  console.log(`Size:      ${(systemInfo.size / 1024).toFixed(2)} KB`);
+  console.log(`Modified:  ${systemInfo.mtime.toLocaleString()}`);
+
+  console.log('\n=== KNIME Metadata ===');
+  console.log(`Name:      ${metadata.name}`);
+  console.log(`Author:    ${metadata.author}`);
+  console.log(`Version:   ${metadata.version}`);
+  if (metadata.description) {
+    console.log(`Description: ${metadata.description}`);
+  }
+
+  if (metadata.nodes.length > 0) {
+    console.log(`\n=== Nodes (Total: ${metadata.nodes.length}) ===`);
+    metadata.nodes.forEach(n => {
+      console.log(`[${n.id}] ${n.name}`);
+    });
+  } else {
+    console.log('\n=== Nodes ===');
+    console.log('No nodes found or empty workflow.');
+  }
+  console.log('');
 }
 
 function getWorkflowInfo(targetPath: string, isDir: boolean) {
-  if (!fs.existsSync(targetPath)) {
-    console.error(`Error: Workflow not found: ${targetPath}`);
-    process.exit(1);
-  }
-
   const stats = fs.statSync(targetPath);
-  const ext = path.extname(targetPath).toLowerCase();
-
-  console.log('\n=== Workflow System Info ===');
-  console.log(`Path:      ${targetPath}`);
-  console.log(`Size:      ${(stats.size / 1024).toFixed(2)} KB`);
-  console.log(`Modified:  ${stats.mtime.toLocaleString()}`);
+  const fallbackName = path.basename(targetPath, path.extname(targetPath));
+  let xmlData = '';
 
   if (isDir) {
     const knimeFile = path.join(targetPath, 'workflow.knime');
     if (fs.existsSync(knimeFile)) {
-      try {
-        const xmlData = fs.readFileSync(knimeFile, 'utf8');
-        const parser = new XMLParser({ ignoreAttributes: false });
-        const jsonObj = parser.parse(xmlData);
-
-        const entries: KnimeEntry[] = jsonObj.config?.entry || [];
-        const metadata: Record<string, string> = {};
-
-        // Normaliser les entrées si c'est un tableau ou un objet unique
-        const entryList = Array.isArray(entries) ? entries : [entries];
-
-        entryList.forEach(e => {
-          if (e['@_key']) {
-            metadata[e['@_key']] = e['@_value'];
-          }
-        });
-
-        console.log('\n=== KNIME Metadata ===');
-        console.log(`Name:      ${metadata['name'] || path.basename(targetPath)}`);
-        console.log(`Author:    ${metadata['author'] || 'Unknown'}`);
-        console.log(`Version:   ${metadata['created_by'] || 'Unknown'}`);
-        if (metadata['description']) {
-          console.log(`Description: ${metadata['description']}`);
-        }
-
-        // Extraction des nœuds
-        const configs = jsonObj.config?.config || [];
-        const configList = Array.isArray(configs) ? configs : [configs];
-        const nodesConfig = configList.find((c: any) => c['@_key'] === 'nodes');
-
-        if (nodesConfig) {
-          const nodes = nodesConfig.config || [];
-          const nodeList = Array.isArray(nodes) ? nodes : [nodes];
-          
-          console.log(`\n=== Nodes (Total: ${nodeList.length}) ===`);
-          nodeList.forEach((n: any) => {
-            const nodeEntries = Array.isArray(n.entry) ? n.entry : [n.entry];
-            const id = nodeEntries.find((e: any) => e['@_key'] === 'id')?.['@_value'];
-            const settingsFile = nodeEntries.find((e: any) => e['@_key'] === 'node_settings_file')?.['@_value'];
-            
-            if (settingsFile) {
-              // Extraire le nom et nettoyer le suffixe (#ID)
-              const nodeName = settingsFile.split('/')[0].replace(/\s+\(#\d+\)$/, '');
-              console.log(`[${id || '?'}] ${nodeName}`);
-            }
-          });
-        }
-      } catch (err) {
-        console.warn('\n[Warning] Could not parse KNIME metadata file.');
-      }
+      xmlData = fs.readFileSync(knimeFile, 'utf8');
     }
   } else {
-    console.log('\n[Note] Extended metadata extraction for .knwf files (ZIP) not implemented yet.');
+    try {
+      const zip = new AdmZip(targetPath);
+      const zipEntries = zip.getEntries();
+      // Chercher workflow.knime (peut être préfixé par le nom du workflow dans le ZIP)
+      const knimeEntry = zipEntries.find(e => e.entryName.endsWith('workflow.knime'));
+      
+      if (knimeEntry) {
+        xmlData = zip.readAsText(knimeEntry);
+      }
+    } catch (err) {
+      console.warn('\n[Warning] Could not read .knwf archive.');
+    }
   }
-  console.log('');
+
+  if (xmlData) {
+    try {
+      const metadata = parseWorkflowMetadata(xmlData, fallbackName);
+      displayInfo(metadata, { path: targetPath, size: stats.size, mtime: stats.mtime });
+    } catch (err) {
+      console.error('\nError: Failed to parse KNIME metadata.');
+    }
+  } else {
+    console.log('\n=== Workflow System Info ===');
+    console.log(`Path:      ${targetPath}`);
+    console.log(`Size:      ${(stats.size / 1024).toFixed(2)} KB`);
+    console.log(`Modified:  ${stats.mtime.toLocaleString()}`);
+    console.log('\n[Warning] No KNIME metadata found.');
+  }
 }
 
 export const infoCommand = new Command('info')
