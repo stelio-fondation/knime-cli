@@ -153,7 +153,7 @@ export const runCommand = new Command('run')
 
     const proc = spawn(knimeBatch, args, { 
       stdio: options.verbose ? 'inherit' : 'ignore',
-      shell: true 
+      shell: false
     });
 
     if (proc.pid) {

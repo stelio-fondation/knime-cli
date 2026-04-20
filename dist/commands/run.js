@@ -167,7 +167,7 @@ exports.runCommand = new commander_1.Command('run')
     }
     const proc = (0, child_process_1.spawn)(knimeBatch, args, {
         stdio: options.verbose ? 'inherit' : 'ignore',
-        shell: true
+        shell: false
     });
     if (proc.pid) {
         (0, registry_1.addExecution)({
