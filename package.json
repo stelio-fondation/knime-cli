@@ -2,6 +2,13 @@
   "name": "knime-cli",
   "version": "1.0.0",
   "description": "CLI pour la gestion de workflows KNIME",
+  "files": [
+    "dist",
+    "samples",
+    "bin",
+    "README.md",
+    "SKILL.md"
+  ],
   "main": "dist/index.js",
   "bin": {
     "knime": "./dist/index.js"
