@@ -5,7 +5,14 @@ description: Gestionnaire de workflows KNIME (Analyse, Validation, Exécution, D
 
 # KNIME CLI Skill
 
-Cette skill permet à un agent d'interagir avec l'écosystème KNIME via le CLI `knime`.
+## ⚠️ CRITICAL: Windows Execution Rules
+**NEVER use PowerShell (`pwsh` or `powershell`) to execute this CLI on Windows.**
+Always use `cmd.exe` or call the command via `knime.cmd`.
+If `knime` command fails with EPERM, use the safe launcher: `.\knime-safe.bat [args]`.
+
+## Description
+Ce skill permet à l'agent de gérer, exécuter et documenter des workflows KNIME.
+ via le CLI `knime`.
 
 ## Commandes Disponibles
 
