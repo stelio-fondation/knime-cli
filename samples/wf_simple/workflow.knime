@@ -5,4 +5,18 @@
     <entry key="name" type="xstring" value="Simple Workflow Example"/>
     <entry key="author" type="xstring" value="Antigravity Agent"/>
     <entry key="description" type="xstring" value="A sample workflow for testing CLI metadata extraction."/>
+    <config key="nodes">
+        <config key="node_1">
+            <entry key="id" type="xint" value="1"/>
+            <entry key="node_settings_file" type="xstring" value="Table Creator (#1)/settings.xml"/>
+        </config>
+        <config key="node_2">
+            <entry key="id" type="xint" value="2"/>
+            <entry key="node_settings_file" type="xstring" value="CSV Reader (#2)/settings.xml"/>
+        </config>
+        <config key="node_3">
+            <entry key="id" type="xint" value="3"/>
+            <entry key="node_settings_file" type="xstring" value="Excel Writer (#3)/settings.xml"/>
+        </config>
+    </config>
 </config>

@@ -56,6 +56,29 @@ function getWorkflowInfo(targetPath: string, isDir: boolean) {
         if (metadata['description']) {
           console.log(`Description: ${metadata['description']}`);
         }
+
+        // Extraction des nœuds
+        const configs = jsonObj.config?.config || [];
+        const configList = Array.isArray(configs) ? configs : [configs];
+        const nodesConfig = configList.find((c: any) => c['@_key'] === 'nodes');
+
+        if (nodesConfig) {
+          const nodes = nodesConfig.config || [];
+          const nodeList = Array.isArray(nodes) ? nodes : [nodes];
+          
+          console.log(`\n=== Nodes (Total: ${nodeList.length}) ===`);
+          nodeList.forEach((n: any) => {
+            const nodeEntries = Array.isArray(n.entry) ? n.entry : [n.entry];
+            const id = nodeEntries.find((e: any) => e['@_key'] === 'id')?.['@_value'];
+            const settingsFile = nodeEntries.find((e: any) => e['@_key'] === 'node_settings_file')?.['@_value'];
+            
+            if (settingsFile) {
+              // Extraire le nom et nettoyer le suffixe (#ID)
+              const nodeName = settingsFile.split('/')[0].replace(/\s+\(#\d+\)$/, '');
+              console.log(`[${id || '?'}] ${nodeName}`);
+            }
+          });
+        }
       } catch (err) {
         console.warn('\n[Warning] Could not parse KNIME metadata file.');
       }
