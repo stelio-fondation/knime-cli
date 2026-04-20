@@ -1,4 +1,7 @@
 node_modules/
+dist/
 *.log
-.DS_Store. w o r k t r e e s /  
- 
+.DS_Store
+.worktrees/
+.vscode/
+samples/.metadata/

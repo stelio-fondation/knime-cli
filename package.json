@@ -11,14 +11,16 @@
   ],
   "main": "dist/index.js",
   "bin": {
-    "knime": "./dist/index.js"
+    "knime": "./dist/index.js",
+    "knime-cli": "./dist/index.js"
   },
   "scripts": {
     "build": "npx tsc && node scripts/add-shebang.js",
     "start": "node dist/index.js",
     "dev": "npm run build && node dist/index.js",
     "test": "echo \"Pas de tests\" && exit 0",
-    "link": "npm run build && npm link"
+    "link": "npm run build && npm link",
+    "prepare": "npm run build"
   },
   "keywords": [
     "knime",

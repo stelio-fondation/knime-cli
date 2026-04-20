@@ -11,8 +11,8 @@ Always use `cmd.exe` or call the command via `knime.cmd`.
 If `knime` command fails with EPERM, use the safe launcher: `.\knime-safe.bat [args]`.
 
 ## Description
-Ce skill permet à l'agent de gérer, exécuter et documenter des workflows KNIME.
- via le CLI `knime`.
+Ce skill permet à l'agent de gérer, exécuter et documenter des workflows KNIME via le CLI `knime` (ou `knime-cli`).
+La résolution des workflows est **récursive** : vous pouvez spécifier juste le nom du workflow, et le CLI le trouvera dans les sous-dossiers du chemin configuré.
 
 ## Commandes Disponibles
 

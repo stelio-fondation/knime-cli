@@ -6,3 +6,5 @@ tsconfig.json
 .vscode/
 docs/knowledge/
 scripts/
+samples/.metadata/
+*.tsbuildinfo

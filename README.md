@@ -25,8 +25,13 @@
 Installez l'outil globalement depuis GitHub :
 
 ```bash
+# Installe knime et l'alias knime-cli
 npm install -g stelio-fondation/knime-cli
 ```
+
+### 📋 Pré-requis
+- **Node.js** >= 18.0.0
+- **KNIME Analytics Platform** installé localement (pour `run`, `validate`, `doc`) ou accès à un **KNIME Server**.
 
 ### 🛡️ Compatibilité & Sécurité
 Le CLI est conçu pour être **Antivirus-friendly**. Il n'utilise aucun shell intermédiaire (PowerShell ou CMD) pour ses opérations internes, ce qui évite les blocages de sécurité courants sur Windows.

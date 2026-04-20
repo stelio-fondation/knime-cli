@@ -80,7 +80,7 @@ exports.docCommand = new commander_1.Command('doc')
             markdown += `- **#${node.id}** : ${node.name}\n`;
         });
         const outputPath = options.output || path.join(options.path, options.workflow, 'README.md');
-        fs.writeFileSync(outputPath, markdown);
+        fs.writeFileSync(outputPath, markdown, { encoding: 'utf8' });
         console.log(chalk_1.default.green(`\n✅ Documentation générée avec succès : ${chalk_1.default.bold(outputPath)}`));
         console.log(chalk_1.default.blue(`💡 Vous pouvez visualiser le diagramme sur : https://mermaid.live`));
     }

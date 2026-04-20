@@ -14,7 +14,12 @@ const program = new Command();
 program
   .name('knime')
   .description('CLI pour la gestion de workflows KNIME')
-  .version('1.0.0');
+  .version('1.1.0');
+
+// Force UTF-8 encoding for Windows compatibility
+if (process.stdout.isTTY) {
+  process.stdout.setDefaultEncoding?.('utf8');
+}
 
 program.addCommand(listCommand);
 program.addCommand(runCommand);

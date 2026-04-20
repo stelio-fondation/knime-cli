@@ -51,7 +51,7 @@ export const docCommand = new Command('doc')
       });
 
       const outputPath = options.output || path.join(options.path, options.workflow, 'README.md');
-      fs.writeFileSync(outputPath, markdown);
+      fs.writeFileSync(outputPath, markdown, { encoding: 'utf8' });
 
       console.log(chalk.green(`\n✅ Documentation générée avec succès : ${chalk.bold(outputPath)}`));
       console.log(chalk.blue(`💡 Vous pouvez visualiser le diagramme sur : https://mermaid.live`));

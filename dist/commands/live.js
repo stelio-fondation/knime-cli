@@ -113,6 +113,6 @@ function addAnnotation(filePath, text, x = 0, y = 0) {
         annotationsConfig.config = [];
     annotationsConfig.config.push(newAnnotation);
     const newXml = builder.build(jsonObj);
-    fs.writeFileSync(filePath, '<?xml version="1.0" encoding="UTF-8"?>\n' + newXml);
+    fs.writeFileSync(filePath, '<?xml version="1.0" encoding="UTF-8"?>\n' + newXml, { encoding: 'utf8' });
 }
 //# sourceMappingURL=live.js.map

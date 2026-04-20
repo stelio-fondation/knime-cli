@@ -98,7 +98,14 @@ export const runCommand = new Command('run')
           }
         }
       } catch (err: any) {
-        spinner.fail(chalk.red(`Server Error: ${err.message}`));
+        let msg = err.message;
+        const serverUrl = config.get('server.url');
+        if (err.code === 'ENOTFOUND') {
+          msg = `Impossible de joindre le KNIME Server à ${serverUrl}. Vérifiez votre configuration (knime config get server.url).`;
+        } else if (err.code === 'ECONNREFUSED') {
+          msg = `Connexion refusée par le KNIME Server (${serverUrl}). Assurez-vous que le serveur est démarré.`;
+        }
+        spinner.fail(chalk.red(`Server Error: ${msg}`));
         process.exit(1);
       }
       return;

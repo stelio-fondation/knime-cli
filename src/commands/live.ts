@@ -87,5 +87,5 @@ function addAnnotation(filePath: string, text: string, x: number = 0, y: number 
   annotationsConfig.config.push(newAnnotation);
 
   const newXml = builder.build(jsonObj);
-  fs.writeFileSync(filePath, '<?xml version="1.0" encoding="UTF-8"?>\n' + newXml);
+  fs.writeFileSync(filePath, '<?xml version="1.0" encoding="UTF-8"?>\n' + newXml, { encoding: 'utf8' });
 }

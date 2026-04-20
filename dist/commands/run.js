@@ -121,7 +121,15 @@ exports.runCommand = new commander_1.Command('run')
             }
         }
         catch (err) {
-            spinner.fail(chalk_1.default.red(`Server Error: ${err.message}`));
+            let msg = err.message;
+            const serverUrl = config_1.default.get('server.url');
+            if (err.code === 'ENOTFOUND') {
+                msg = `Impossible de joindre le KNIME Server à ${serverUrl}. Vérifiez votre configuration (knime config get server.url).`;
+            }
+            else if (err.code === 'ECONNREFUSED') {
+                msg = `Connexion refusée par le KNIME Server (${serverUrl}). Assurez-vous que le serveur est démarré.`;
+            }
+            spinner.fail(chalk_1.default.red(`Server Error: ${msg}`));
             process.exit(1);
         }
         return;
