@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
+import { resolveWorkflowPath } from '../utils/workflow';
 
 interface RunOptions {
   workflow: string;
@@ -59,25 +60,15 @@ export const runCommand = new Command('run')
       return;
     }
 
-    const targetPath = path.isAbsolute(options.workflow)
-      ? options.workflow
-      : path.join(options.path || '.', options.workflow);
+    let targetPath = '';
+    let workflowArg: '-workflowFile' | '-workflowDir' = '-workflowFile';
 
-    if (!fs.existsSync(targetPath)) {
-      console.error(`Error: Workflow not found: ${targetPath}`);
-      process.exit(1);
-    }
-
-    const stats = fs.statSync(targetPath);
-    let workflowArg = '';
-    
-    if (stats.isFile() && targetPath.endsWith('.knwf')) {
-      workflowArg = '-workflowFile';
-    } else if (stats.isDirectory() && fs.existsSync(path.join(targetPath, 'workflow.knime'))) {
-      workflowArg = '-workflowDir';
-    } else {
-      console.error(`Error: Path is not a valid KNIME workflow: ${targetPath}`);
-      console.log('Must be a .knwf file or a directory containing workflow.knime');
+    try {
+      const target = resolveWorkflowPath(options.workflow, options.path);
+      targetPath = target.targetPath;
+      workflowArg = target.workflowArg;
+    } catch (err: any) {
+      console.error(`Error: ${err.message}`);
       process.exit(1);
     }
 
