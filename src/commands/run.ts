@@ -10,6 +10,7 @@ interface RunOptions {
   params?: string;
   knimePath?: string;
   verbose?: boolean;
+  save?: boolean;
 }
 
 function findKnimeBatch(knimePath?: string): string | null {
@@ -51,20 +52,32 @@ export const runCommand = new Command('run')
   .option('--params <json>', 'Paramètres au format JSON', '{}')
   .option('-k, --knime-path <path>', 'Chemin vers KNIME')
   .option('-v, --verbose', 'Afficher la sortie KNIME')
+  .option('--save', 'Sauvegarder le workflow après exécution')
   .action(async (options: RunOptions) => {
     if (options.server) {
       console.log('Server execution not implemented yet');
       return;
     }
 
-    const workflowFile = options.path 
-      ? path.join(options.path, options.workflow.endsWith('.knwf') ? options.workflow : `${options.workflow}.knwf`)
-      : options.workflow.endsWith('.knwf') 
-        ? options.workflow 
-        : `${options.workflow}.knwf`;
+    const targetPath = path.isAbsolute(options.workflow)
+      ? options.workflow
+      : path.join(options.path || '.', options.workflow);
 
-    if (!fs.existsSync(workflowFile)) {
-      console.error(`Error: Workflow not found: ${workflowFile}`);
+    if (!fs.existsSync(targetPath)) {
+      console.error(`Error: Workflow not found: ${targetPath}`);
+      process.exit(1);
+    }
+
+    const stats = fs.statSync(targetPath);
+    let workflowArg = '';
+    
+    if (stats.isFile() && targetPath.endsWith('.knwf')) {
+      workflowArg = '-workflowFile';
+    } else if (stats.isDirectory() && fs.existsSync(path.join(targetPath, 'workflow.knime'))) {
+      workflowArg = '-workflowDir';
+    } else {
+      console.error(`Error: Path is not a valid KNIME workflow: ${targetPath}`);
+      console.log('Must be a .knwf file or a directory containing workflow.knime');
       process.exit(1);
     }
 
@@ -77,13 +90,22 @@ export const runCommand = new Command('run')
 
     const params = parseParams(options.params || '{}');
 
-    console.log(`Executing workflow: ${options.workflow}`);
+    console.log(`Executing workflow: ${targetPath}`);
     console.log(`KNIME: ${knimeBatch}\n`);
 
-    const args = ['-workflowFile', workflowFile];
+    const args = [
+      '-nosplash',
+      '-application', 'org.knime.product.KNIME_BATCH_APPLICATION',
+      '-reset',
+      workflowArg, targetPath
+    ];
+    
+    if (!options.save) {
+      args.push('-nosave');
+    }
     
     for (const [key, value] of Object.entries(params)) {
-      args.push('-key', key, '-value', value);
+      args.push(`-workflow.variable=${key},${value},String`);
     }
 
     if (!options.verbose) {
