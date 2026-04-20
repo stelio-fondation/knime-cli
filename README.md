@@ -76,6 +76,19 @@ knime stop --pid 1234
 
 ---
 
+## 🤖 AI Agent & Skill Support (OpenCode)
+
+Ce projet est conçu pour être utilisé par des agents IA. Il inclut un fichier `SKILL.md` qui permet à des outils comme **Claude Code** ou **Antigravity** de comprendre et d'exécuter les commandes automatiquement.
+
+### Comment l'utiliser comme Skill :
+1. **Importation** : Si vous utilisez un agent, pointez-le simplement sur ce dépôt ou clonez-le. L'agent détectera le fichier `SKILL.md`.
+2. **Automatisation** : Vous pouvez demander à l'IA :
+   - *"Analyse ce workflow et génère la documentation"*
+   - *"Lance l'exécution de tous les workflows du dossier samples sur le serveur"*
+   - *"Vérifie s'il y a des fichiers de cache trop gros dans mes projets"*
+
+---
+
 ## 🤝 Contribution
 
 Les contributions sont les bienvenues ! N'hésitez pas à ouvrir une Issue ou une Pull Request.
