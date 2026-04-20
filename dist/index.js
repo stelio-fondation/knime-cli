@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const commander_1 = require("commander");
+const list_1 = require("./commands/list");
+const run_1 = require("./commands/run");
+const status_1 = require("./commands/status");
+const stop_1 = require("./commands/stop");
+const info_1 = require("./commands/info");
+const validate_1 = require("./commands/validate");
+const config_1 = require("./commands/config");
+const doc_1 = require("./commands/doc");
+const live_1 = require("./commands/live");
+const program = new commander_1.Command();
+program
+    .name('knime')
+    .description('CLI pour la gestion de workflows KNIME')
+    .version('1.0.0');
+program.addCommand(list_1.listCommand);
+program.addCommand(run_1.runCommand);
+program.addCommand(status_1.statusCommand);
+program.addCommand(stop_1.stopCommand);
+program.addCommand(info_1.infoCommand);
+program.addCommand(validate_1.validateCommand);
+program.addCommand(config_1.configCommand);
+program.addCommand(doc_1.docCommand);
+program.addCommand(live_1.liveCommand);
+program.parse(process.argv);
+//# sourceMappingURL=index.js.map

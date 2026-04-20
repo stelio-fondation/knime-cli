@@ -1,0 +1,1 @@
+{"version":3,"file":"fs.d.ts","sourceRoot":"","sources":["../../src/utils/fs.ts"],"names":[],"mappings":"AAGA,MAAM,WAAW,QAAQ;IACvB,IAAI,EAAE,MAAM,CAAC;IACb,IAAI,EAAE,MAAM,CAAC;CACd;AAED;;GAEG;AACH,wBAAgB,WAAW,CAAC,OAAO,EAAE,MAAM,EAAE,YAAY,GAAE,QAAQ,EAAO,GAAG,QAAQ,EAAE,CAkBtF"}
