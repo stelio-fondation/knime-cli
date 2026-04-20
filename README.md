@@ -65,7 +65,18 @@ Créez un `README.md` avec un diagramme de flux automatiquement :
 knime doc -w MonWorkflow
 ```
 
-### 4. Gérer les exécutions
+### 4. Live Pilot (Expérimental 🚀)
+Pilotez votre workflow ouvert dans KNIME en temps réel via une API :
+```bash
+# Démarre le serveur de pilotage
+knime live -w MonWorkflow
+
+# Envoyez une commande via API (ou laissez l'IA le faire)
+# Exemple : Ajouter une annotation à [500,500]
+Invoke-RestMethod -Uri "http://localhost:3000/pilot" -Method Post -Body '{"action":"add_annotation", "data":{"text":"Piloté par IA !", "x":500, "y":500}}' -ContentType "application/json"
+```
+
+### 5. Gérer les exécutions
 ```bash
 # Voir ce qui tourne
 knime status
