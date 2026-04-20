@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
 import { resolveWorkflowPath } from '../utils/workflow';
+import { addExecution, removeExecution } from '../utils/registry';
 
 interface RunOptions {
   workflow: string;
@@ -16,8 +17,15 @@ interface RunOptions {
 
 function findKnimeBatch(knimePath?: string): string | null {
   if (knimePath) {
-    const batchPath = path.join(knimePath, 'knime');
-    return fs.existsSync(batchPath) ? batchPath : null;
+    const possiblePaths = [
+      path.join(knimePath, 'knime'),
+      path.join(knimePath, 'knime.exe'),
+      path.join(knimePath, 'knime.bat'),
+    ];
+    for (const p of possiblePaths) {
+      if (fs.existsSync(p)) return p;
+    }
+    return null;
   }
 
   const possiblePaths = [
@@ -103,17 +111,30 @@ export const runCommand = new Command('run')
       args.push('-consoleLog', 'none');
     }
 
+
     const proc = spawn(knimeBatch, args, { 
       stdio: options.verbose ? 'inherit' : 'ignore',
       shell: true 
     });
 
+    if (proc.pid) {
+      addExecution({
+        id: proc.pid.toString(),
+        pid: proc.pid,
+        workflow: options.workflow,
+        startTime: new Date().toISOString(),
+        status: 'running'
+      });
+    }
+
     proc.on('error', (err) => {
+      if (proc.pid) removeExecution(proc.pid);
       console.error(`Error: ${err.message}`);
       process.exit(1);
     });
 
     proc.on('close', (code) => {
+      if (proc.pid) removeExecution(proc.pid);
       if (code === 0) {
         console.log('\nWorkflow executed successfully.');
       } else {
