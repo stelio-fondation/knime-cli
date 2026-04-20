@@ -1,0 +1,33 @@
+{
+  "name": "knime-cli",
+  "version": "1.0.0",
+  "description": "CLI pour la gestion de workflows KNIME",
+  "main": "dist/index.js",
+  "bin": {
+    "knime": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc && node dist/index.js",
+    "test": "echo \"Pas de tests\" && exit 0",
+    "link": "npm link"
+  },
+  "keywords": [
+    "knime",
+    "cli",
+    "workflow"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.39",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "commander": "^14.0.3"
+  }
+}
