@@ -1,5 +1,8 @@
 # 🚀 KNIME CLI
 
+> [!IMPORTANT]
+> **WINDOWS USERS**: NEVER use PowerShell (`pwsh` or `powershell`) to execute this CLI. Always use `cmd.exe` or `knime.cmd`. If you encounter permission errors, use the provided safe launcher: `.\knime-safe.bat`.
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
