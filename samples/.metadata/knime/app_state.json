@@ -1,0 +1,22 @@
+{
+  "version" : "5.11.0.v202603030810",
+  "projects" : [ {
+    "name" : "wf_simple",
+    "active" : true,
+    "origin" : {
+      "providerId" : "local",
+      "spaceId" : "local",
+      "relativePath" : "wf_simple"
+    }
+  } ],
+  "mostRecentlyUsedProjects" : [ {
+    "name" : "wf_simple",
+    "timeUsed" : "2026-04-20T15:06:13.4130547+02:00",
+    "origin" : {
+      "providerId" : "local",
+      "spaceId" : "local",
+      "projectType" : "WORKFLOW",
+      "relativePath" : "wf_simple"
+    }
+  } ]
+}

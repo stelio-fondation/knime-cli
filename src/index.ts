@@ -6,6 +6,8 @@ import { stopCommand } from './commands/stop';
 import { infoCommand } from './commands/info';
 import { validateCommand } from './commands/validate';
 import { configCommand } from './commands/config';
+import { docCommand } from './commands/doc';
+import { liveCommand } from './commands/live';
 
 const program = new Command();
 
@@ -21,5 +23,7 @@ program.addCommand(stopCommand);
 program.addCommand(infoCommand);
 program.addCommand(validateCommand);
 program.addCommand(configCommand);
+program.addCommand(docCommand);
+program.addCommand(liveCommand);
 
 program.parse(process.argv);

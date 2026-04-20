@@ -7,11 +7,12 @@
     "knime": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node scripts/add-shebang.js",
     "start": "node dist/index.js",
-    "dev": "tsc && node dist/index.js",
+    "dev": "npm run build && node dist/index.js",
     "test": "echo \"Pas de tests\" && exit 0",
-    "link": "npm link"
+    "link": "npm run build && npm link",
+    "prepare": "npm run build"
   },
   "keywords": [
     "knime",
@@ -29,6 +30,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
+    "@types/express": "^5.0.6",
     "adm-zip": "^0.5.17",
     "axios": "^1.15.1",
     "axios-mock-adapter": "^2.1.0",
@@ -36,6 +38,7 @@
     "cli-table3": "^0.6.5",
     "commander": "^14.0.3",
     "conf": "^10.2.0",
+    "express": "^5.2.1",
     "fast-xml-parser": "^5.7.1",
     "ora": "^5.4.1"
   }

@@ -7,6 +7,8 @@ export interface WorkflowMetadata {
   version: string;
   description: string;
   nodes: { id: string; name: string }[];
+  connections: { sourceID: string; destID: string }[];
+  annotations: string[];
 }
 
 interface KnimeEntry {
@@ -54,11 +56,46 @@ export function parseWorkflowMetadata(xmlData: string, fallbackName: string): Wo
     });
   }
 
+  const connections: { sourceID: string; destID: string }[] = [];
+  const connectionsConfig = configList.find((c: any) => c?.['@_key'] === 'connections');
+
+  if (connectionsConfig) {
+    const connectionConfigs = connectionsConfig.config || [];
+    const connectionList = Array.isArray(connectionConfigs) ? connectionConfigs : [connectionConfigs];
+
+    connectionList.forEach((c: any) => {
+      const connEntries = Array.isArray(c?.entry) ? c.entry : [c?.entry];
+      const sourceID = connEntries.find((e: any) => e?.['@_key'] === 'sourceID')?.['@_value'];
+      const destID = connEntries.find((e: any) => e?.['@_key'] === 'destID')?.['@_value'];
+      if (sourceID && destID) {
+        connections.push({ sourceID, destID });
+      }
+    });
+  }
+
+  const annotations: string[] = [];
+  const annotationsConfig = configList.find((c: any) => c?.['@_key'] === 'annotations');
+
+  if (annotationsConfig) {
+    const annotationConfigs = annotationsConfig.config || [];
+    const annotationList = Array.isArray(annotationConfigs) ? annotationConfigs : [annotationConfigs];
+
+    annotationList.forEach((a: any) => {
+      const annEntries = Array.isArray(a?.entry) ? a.entry : [a?.entry];
+      const text = annEntries.find((e: any) => e?.['@_key'] === 'text')?.['@_value'];
+      if (text) {
+        annotations.push(text);
+      }
+    });
+  }
+
   return {
     name: metadata['name'] || fallbackName,
     author: metadata['author'] || 'Unknown',
     version: metadata['created_by'] || 'Unknown',
     description: metadata['description'] || '',
-    nodes
+    nodes,
+    connections,
+    annotations
   };
 }

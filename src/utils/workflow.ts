@@ -1,5 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { parseWorkflowMetadata, WorkflowMetadata } from './knime-parser';
+import AdmZip = require('adm-zip');
 
 export interface WorkflowTarget {
   targetPath: string;
@@ -26,5 +28,23 @@ export function resolveWorkflowPath(workflow: string, basePath?: string): Workfl
     return { targetPath, workflowArg: '-workflowDir' };
   } else {
     throw new Error(`Path is not a valid KNIME workflow: ${targetPath}. Must be a .knwf file or a directory containing workflow.knime`);
+  }
+}
+
+/**
+ * Récupère les métadonnées d'un workflow (depuis ZIP ou dossier).
+ */
+export async function getWorkflowMetadata(workflow: string, basePath?: string): Promise<WorkflowMetadata> {
+  const { targetPath, workflowArg } = resolveWorkflowPath(workflow, basePath);
+  
+  if (workflowArg === '-workflowFile') {
+    const zip = new AdmZip(targetPath);
+    const workflowKnime = zip.getEntries().find(e => e.entryName.endsWith('workflow.knime'));
+    if (!workflowKnime) throw new Error('Could not find workflow.knime in ZIP');
+    return parseWorkflowMetadata(workflowKnime.getData().toString('utf8'), path.basename(targetPath));
+  } else {
+    const xmlPath = path.join(targetPath, 'workflow.knime');
+    const xmlData = fs.readFileSync(xmlPath, 'utf8');
+    return parseWorkflowMetadata(xmlData, path.basename(targetPath));
   }
 }
