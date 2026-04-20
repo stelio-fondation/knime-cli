@@ -34,7 +34,7 @@ configCommand
   .description('Liste toute la configuration')
   .action(() => {
     console.log(chalk.bold('\n=== Configuration Globale ==='));
-    console.log(JSON.stringify(config.store, null, 2));
+    console.log(JSON.stringify((config as any).store, null, 2));
     console.log('');
   });
 

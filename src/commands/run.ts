@@ -1,4 +1,5 @@
 import { Command } from 'commander';
+import { KnimeServerClient } from '../utils/server-api';
 import * as fs from 'fs';
 import * as path from 'path';
 import { spawn } from 'child_process';
@@ -67,7 +68,39 @@ export const runCommand = new Command('run')
   .option('--save', 'Sauvegarder le workflow après exécution')
   .action(async (options: RunOptions) => {
     if (options.server) {
-      console.log(chalk.yellow('Server execution not implemented yet'));
+      const spinner = ora(`Connecting to KNIME Server...`).start();
+      try {
+        const client = new KnimeServerClient();
+        const params = parseParams(options.params || '{}');
+        
+        spinner.text = `Executing ${chalk.cyan(options.workflow)} on server...`;
+        const jobId = await client.executeWorkflow(options.workflow, params);
+        
+        spinner.text = `Job created: ${chalk.green(jobId)}. Polling status...`;
+
+        let finished = false;
+        while (!finished) {
+          const status = await client.getJobStatus(jobId);
+          
+          if (status.status === 'FINISHED') {
+            spinner.succeed(chalk.green(`Workflow executed successfully on server (Job: ${jobId}).`));
+            finished = true;
+          } else if (status.status === 'FAILED' || status.status === 'DISCARDED') {
+            spinner.fail(chalk.red(`Workflow ${status.status.toLowerCase()} on server: ${status.message || 'Check logs on server.'}`));
+            finished = true;
+            process.exit(1);
+          } else {
+            spinner.text = `Job ${jobId} is ${chalk.yellow(status.status.toLowerCase())}...`;
+          }
+          
+          if (!finished) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+          }
+        }
+      } catch (err: any) {
+        spinner.fail(chalk.red(`Server Error: ${err.message}`));
+        process.exit(1);
+      }
       return;
     }
 
