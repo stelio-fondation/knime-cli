@@ -25,6 +25,13 @@ Installez l'outil globalement depuis GitHub :
 npm install -g stelio-fondation/knime-cli
 ```
 
+### 🛡️ Mode Sécurisé (Windows / Antivirus)
+Si votre antivirus bloque PowerShell 7 (`pwsh.exe`), vous pouvez utiliser le lanceur direct inclus dans le dépôt :
+```cmd
+# Dans le dossier du projet
+.\knime-safe.bat [commande]
+```
+
 ---
 
 ## ⚙️ Configuration
