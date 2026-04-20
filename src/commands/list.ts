@@ -87,7 +87,7 @@ export const listCommand = new Command('list')
   .description('Liste les workflows KNIME')
   .option('-p, --path <path>', 'Chemin du dossier contenant les workflows', '.')
   .option('-r, --recursive', 'Affiche le chemin complet des workflows')
-  .action(async (options) => {
+  .action(async (options: any) => {
     const workflows = scanDirectory(options.path, options.recursive || false);
 
     if (workflows.length === 0) {

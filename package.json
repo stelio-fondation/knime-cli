@@ -1,6 +1,6 @@
 {
   "name": "knime-cli",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "description": "CLI pour la gestion de workflows KNIME",
   "files": [
     "dist",
@@ -34,11 +34,12 @@
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.8",
+    "@types/cli-table3": "^0.0.40",
+    "@types/express": "^5.0.0",
     "@types/node": "^20.19.39",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@types/express": "^5.0.6",
     "adm-zip": "^0.5.17",
     "axios": "^1.15.1",
     "axios-mock-adapter": "^2.1.0",

@@ -5,7 +5,7 @@ export const stopCommand = new Command('stop')
   .description('Arrête une exécution KNIME en cours')
   .option('-i, --execution-id <id>', 'PID de l\'exécution à arrêter')
   .option('-a, --all', 'Arrêter toutes les exécutions en cours')
-  .action(async (options) => {
+  .action(async (options: any) => {
     const executions = getExecutions();
 
     if (executions.length === 0) {

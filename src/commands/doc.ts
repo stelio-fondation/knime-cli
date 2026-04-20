@@ -9,7 +9,7 @@ export const docCommand = new Command('doc')
   .requiredOption('-w, --workflow <name>', 'Nom du workflow')
   .option('-p, --path <path>', 'Chemin du dossier contenant le workflow', '.')
   .option('-o, --output <file>', 'Fichier de sortie (default: README.md dans le dossier du workflow)')
-  .action(async (options) => {
+  .action(async (options: any) => {
     try {
       const metadata = await getWorkflowMetadata(options.workflow, options.path);
       

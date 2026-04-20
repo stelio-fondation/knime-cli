@@ -10,7 +10,7 @@ export const liveCommand = new Command('live')
   .requiredOption('-w, --workflow <name>', 'Workflow à piloter')
   .option('-p, --path <path>', 'Chemin du workflow', '.')
   .option('--port <port>', 'Port du serveur', '3000')
-  .action((options) => {
+  .action((options: any) => {
     const app = express();
     app.use(express.json());
 
@@ -27,7 +27,7 @@ export const liveCommand = new Command('live')
     console.log(chalk.yellow('\nEn attente de commandes de pilotage...'));
 
     // Endpoint pour recevoir des commandes de pilotage
-    app.post('/pilot', (req, res) => {
+    app.post('/pilot', (req: express.Request, res: express.Response) => {
       const { action, data } = req.body;
       
       try {

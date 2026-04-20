@@ -12,7 +12,7 @@ export interface FileInfo {
 export function getAllFiles(dirPath: string, arrayOfFiles: FileInfo[] = []): FileInfo[] {
   const files = fs.readdirSync(dirPath);
 
-  files.forEach((file) => {
+  files.forEach((file: string) => {
     const fullPath = path.join(dirPath, file);
     const stats = fs.statSync(fullPath);
 

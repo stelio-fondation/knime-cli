@@ -8,7 +8,7 @@ export const configCommand = new Command('config')
 configCommand
   .command('set <key> <value>')
   .description('Définit une valeur de configuration (ex: local.knimePath)')
-  .action((key, value) => {
+  .action((key: string, value: string) => {
     try {
       config.set(key, value);
       console.log(chalk.green(`✅ ${key} défini sur : ${value}`));
@@ -20,7 +20,7 @@ configCommand
 configCommand
   .command('get <key>')
   .description('Affiche une valeur de configuration')
-  .action((key) => {
+  .action((key: string) => {
     const value = config.get(key);
     if (value !== undefined) {
       console.log(`${key}: ${chalk.cyan(JSON.stringify(value, null, 2))}`);
@@ -41,7 +41,7 @@ configCommand
 configCommand
   .command('delete <key>')
   .description('Supprime une clé de configuration')
-  .action((key) => {
+  .action((key: string) => {
     config.delete(key as any);
     console.log(chalk.yellow(`🗑️  ${key} supprimé.`));
   });

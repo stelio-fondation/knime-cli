@@ -54,6 +54,7 @@ function parseParams(paramsStr: string): Record<string, string> {
   } catch {
     console.error('Invalid JSON parameters');
     process.exit(1);
+    return {};
   }
 }
 
@@ -173,13 +174,13 @@ export const runCommand = new Command('run')
       });
     }
 
-    proc.on('error', (err) => {
+    proc.on('error', (err: any) => {
       if (proc.pid) removeExecution(proc.pid);
       spinner.fail(chalk.red(`Error: ${err.message}`));
       process.exit(1);
     });
 
-    proc.on('close', (code) => {
+    proc.on('close', (code: number) => {
       if (proc.pid) removeExecution(proc.pid);
       if (code === 0) {
         spinner.succeed(chalk.green('Workflow executed successfully.'));

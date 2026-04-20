@@ -40,6 +40,7 @@ const path = __importStar(require("path"));
 const workflow_1 = require("../utils/workflow");
 const knime_parser_1 = require("../utils/knime-parser");
 const fs_1 = require("../utils/fs");
+const AdmZip = require("adm-zip");
 exports.validateCommand = new commander_1.Command('validate')
     .description('Valide la structure d\'un workflow KNIME et détecte les fichiers volumineux')
     .requiredOption('-w, --workflow <name>', 'Nom du workflow')
@@ -63,7 +64,7 @@ exports.validateCommand = new commander_1.Command('validate')
             // ZIP support could be added here, but metadata parser needs the full XML string
             // We'll use the same logic as info command (centralized parser)
             // For now, let's assume we read from the same logic
-            const AdmZip = require('adm-zip');
+            // For now, let's assume we read from the same logic
             const zip = new AdmZip(target.targetPath);
             const knimeEntry = zip.getEntries().find((e) => e.entryName.endsWith('workflow.knime'));
             if (knimeEntry)

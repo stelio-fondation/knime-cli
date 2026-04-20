@@ -80,6 +80,7 @@ function parseParams(paramsStr) {
     catch {
         console.error('Invalid JSON parameters');
         process.exit(1);
+        return {};
     }
 }
 exports.runCommand = new commander_1.Command('run')

@@ -87,7 +87,7 @@ export async function getWorkflowMetadata(workflow: string, basePath?: string): 
   
   if (workflowArg === '-workflowFile') {
     const zip = new AdmZip(targetPath);
-    const workflowKnime = zip.getEntries().find(e => e.entryName.endsWith('workflow.knime'));
+    const workflowKnime = zip.getEntries().find((e: any) => e.entryName.endsWith('workflow.knime'));
     if (!workflowKnime) throw new Error('Could not find workflow.knime in ZIP');
     return parseWorkflowMetadata(workflowKnime.getData().toString('utf8'), path.basename(targetPath));
   } else {

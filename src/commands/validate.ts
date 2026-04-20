@@ -4,6 +4,7 @@ import * as path from 'path';
 import { resolveWorkflowPath } from '../utils/workflow';
 import { parseWorkflowMetadata } from '../utils/knime-parser';
 import { getAllFiles } from '../utils/fs';
+import AdmZip = require('adm-zip');
 
 interface ValidateOptions {
   workflow: string;
@@ -35,7 +36,7 @@ export const validateCommand = new Command('validate')
         // ZIP support could be added here, but metadata parser needs the full XML string
         // We'll use the same logic as info command (centralized parser)
         // For now, let's assume we read from the same logic
-        const AdmZip = require('adm-zip');
+        // For now, let's assume we read from the same logic
         const zip = new AdmZip(target.targetPath);
         const knimeEntry = zip.getEntries().find((e: any) => e.entryName.endsWith('workflow.knime'));
         if (knimeEntry) xmlData = zip.readAsText(knimeEntry);
