@@ -1,4 +1,6 @@
 import { Command } from 'commander';
+import chalk from 'chalk';
+import Table from 'cli-table3';
 import { getExecutions, removeExecution } from '../utils/registry';
 
 export const statusCommand = new Command('status')
@@ -7,18 +9,22 @@ export const statusCommand = new Command('status')
     const executions = getExecutions();
 
     if (executions.length === 0) {
-      console.log('\nNo active or recorded executions found.');
+      console.log(chalk.yellow('\nNo active or recorded executions found.'));
       return;
     }
 
-    console.log('\n=== Active KNIME Executions ===');
-    console.log(`${'PID'.padEnd(10)} ${'Workflow'.padEnd(30)} ${'Start Time'.padEnd(25)} ${'Status'}`);
-    console.log('-'.repeat(80));
+    const table = new Table({
+      head: [
+        chalk.blue('PID'), 
+        chalk.blue('Workflow'), 
+        chalk.blue('Start Time'), 
+        chalk.blue('Status')
+      ]
+    });
 
     executions.forEach(e => {
       let isAlive = false;
       try {
-        // Signal 0 vérifie si le processus existe sans le tuer
         process.kill(e.pid, 0);
         isAlive = true;
       } catch (err) {
@@ -26,13 +32,24 @@ export const statusCommand = new Command('status')
       }
 
       if (!isAlive && e.status === 'running') {
-        // Le processus n'existe plus mais était marqué comme running
-        // On pourrait le nettoyer ici ou le marquer comme 'unknown/terminated'
         removeExecution(e.pid);
         return;
       }
 
-      console.log(`${e.pid.toString().padEnd(10)} ${e.workflow.padEnd(30)} ${new Date(e.startTime).toLocaleString().padEnd(25)} ${e.status}`);
+      table.push([
+        e.pid.toString(),
+        e.workflow,
+        new Date(e.startTime).toLocaleString(),
+        e.status === 'running' ? chalk.green(e.status) : chalk.yellow(e.status)
+      ]);
     });
+
+    if (table.length === 0) {
+      console.log(chalk.yellow('\nNo active executions found after cleanup.'));
+      return;
+    }
+
+    console.log(chalk.bold('\n=== Active KNIME Executions ==='));
+    console.log(table.toString());
     console.log('');
   });

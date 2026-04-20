@@ -5,6 +5,7 @@ import { statusCommand } from './commands/status';
 import { stopCommand } from './commands/stop';
 import { infoCommand } from './commands/info';
 import { validateCommand } from './commands/validate';
+import { configCommand } from './commands/config';
 
 const program = new Command();
 
@@ -19,5 +20,6 @@ program.addCommand(statusCommand);
 program.addCommand(stopCommand);
 program.addCommand(infoCommand);
 program.addCommand(validateCommand);
+program.addCommand(configCommand);
 
 program.parse(process.argv);

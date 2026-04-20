@@ -30,7 +30,11 @@
   },
   "dependencies": {
     "adm-zip": "^0.5.17",
+    "chalk": "^4.1.2",
+    "cli-table3": "^0.6.5",
     "commander": "^14.0.3",
-    "fast-xml-parser": "^5.7.1"
+    "conf": "^10.2.0",
+    "fast-xml-parser": "^5.7.1",
+    "ora": "^5.4.1"
   }
 }
