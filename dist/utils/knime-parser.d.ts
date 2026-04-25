@@ -12,6 +12,15 @@ export interface WorkflowMetadata {
         destID: string;
     }[];
     annotations: string[];
+    variables: {
+        name: string;
+        type: string;
+        value: string;
+    }[];
+    bundles: {
+        name: string;
+        version: string;
+    }[];
 }
 /**
  * Parse le contenu XML d'un fichier workflow.knime.

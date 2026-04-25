@@ -6,17 +6,18 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)](https://nodejs.org/)
 
-**KNIME CLI** est un outil en ligne de commande puissant conçu pour automatiser, exécuter et documenter vos workflows KNIME. Que vous travailliez en local ou via un KNIME Server, ce CLI simplifie votre flux de travail data.
+**KNIME CLI** est un outil en ligne de commande puissant conçu pour automatiser, exécuter, comparer et documenter vos workflows KNIME. Que vous travailliez en local ou via un KNIME Server, ce CLI simplifie votre flux de travail data.
 
 ---
 
 ## ✨ Fonctionnalités clés
 
 *   🏃 **Exécution flexible** : Lancez vos workflows en mode local (Batch) ou à distance sur un KNIME Server via API REST.
-*   📝 **Documentation Automatique** : Générez des rapports Markdown et des diagrammes de flux **Mermaid.js** directement depuis vos fichiers de workflow.
-*   🔍 **Analyse & Validation** : Inspectez les métadonnées, listez les nœuds et validez l'intégrité de vos projets (détection de cache volumineux).
-*   📊 **Monitoring** : Suivez vos exécutions en cours avec un tableau de bord des processus (PID, temps écoulé).
-*   🤖 **AI-Ready** : Inclut une "Skill Specification" pour permettre aux agents IA (Claude Code, etc.) de piloter vos workflows.
+*   📊 **Live Pilot** : Modifiez vos workflows en temps réel (variables, annotations) via une API REST intégrée.
+*   🔍 **Analyse & Validation** : Inspectez les métadonnées, listez les nœuds, les dépendances (extensions) et validez l'intégrité de vos projets.
+*   ⚖️ **Comparaison (Diff)** : Comparez deux versions d'un workflow pour voir les nœuds et variables ajoutés ou modifiés.
+*   📄 **Reporting & Doc** : Générez des rapports Markdown complets et des diagrammes de flux **Mermaid.js**.
+*   🤖 **AI-Ready** : Inclut une "Skill Specification" pour permettre aux agents IA de piloter vos workflows.
 
 ---
 
@@ -31,83 +32,64 @@ npm install -g stelio-fondation/knime-cli
 
 ### 📋 Pré-requis
 - **Node.js** >= 18.0.0
-- **KNIME Analytics Platform** installé localement (pour `run`, `validate`, `doc`) ou accès à un **KNIME Server**.
-
-### 🛡️ Compatibilité & Sécurité
-Le CLI est conçu pour être **Antivirus-friendly**. Il n'utilise aucun shell intermédiaire (PowerShell ou CMD) pour ses opérations internes, ce qui évite les blocages de sécurité courants sur Windows.
+- **KNIME Analytics Platform** (pour l'exécution locale) ou accès à un **KNIME Server**.
 
 ---
 
 ## ⚙️ Configuration
 
-Avant de commencer, configurez vos chemins d'accès :
+Configurez vos chemins d'accès pour activer l'exécution locale :
 
 ```bash
 # Définir le chemin vers l'exécutable KNIME local
 knime config set local.knimePath "C:\Program Files\KNIME\knime.exe"
-
-# (Optionnel) Configurer l'accès au KNIME Server
-knime config set server.url "https://votre-serveur-knime.com"
-knime config set server.username "votre-login"
 ```
 
 ---
 
 ## 📖 Utilisation
 
-### 1. Analyser un workflow
-Obtenez instantanément la liste des nœuds et les métadonnées d'un fichier `.knwf` ou d'un dossier :
+### 1. Analyser & Valider
+Obtenez les métadonnées et validez l'intégrité (nœuds manquants, extensions requises) :
 ```bash
-knime info -w MonWorkflow.knwf
+knime info -w MonWorkflow
+knime validate -w MonWorkflow
 ```
 
-### 2. Exécuter un workflow
+### 2. Comparer deux workflows
 ```bash
-# Exécution locale
+knime diff --w1 Workflow_V1 --w2 Workflow_V2
+```
+
+### 3. Exécuter un workflow
+```bash
 knime run -w MonWorkflow
-
-# Exécution sur le serveur
-knime run -w MonWorkflow --server
+knime run -w MonWorkflow --server --params '{"var1": "val1"}'
 ```
 
-### 3. Générer la documentation
-Créez un `README.md` avec un diagramme de flux automatiquement :
+### 4. Générer des rapports
 ```bash
-knime doc -w MonWorkflow
+knime report -w MonWorkflow -o MON_RAPPORT.md
+knime doc -w MonWorkflow # Génère un README.md avec diagramme Mermaid
 ```
 
-### 4. Live Pilot (Expérimental 🚀)
-Pilotez votre workflow ouvert dans KNIME en temps réel via une API :
+### 5. Live Pilot 🚀
+Pilotez votre workflow en temps réel :
 ```bash
-# Démarre le serveur de pilotage
+# Démarre le serveur sur le port 3030
 knime live -w MonWorkflow
 
-# Envoyez une commande via API (ou laissez l'IA le faire)
-# Exemple : Ajouter une annotation à [500,500]
-Invoke-RestMethod -Uri "http://localhost:3000/pilot" -Method Post -Body '{"action":"add_annotation", "data":{"text":"Piloté par IA !", "x":500, "y":500}}' -ContentType "application/json"
-```
-
-### 5. Gérer les exécutions
-```bash
-# Voir ce qui tourne
-knime status
-
-# Arrêter une exécution
-knime stop --pid 1234
+# Modifier une variable via PowerShell
+Invoke-RestMethod -Method Post -Uri "http://localhost:3030/pilot" `
+  -ContentType "application/json" `
+  -Body '{"action": "update_variable", "data": {"name": "ma_var", "value": "nouveau"}}'
 ```
 
 ---
 
-## 🤖 AI Agent & Skill Support (OpenCode)
+## 🤖 AI Agent & Skill Support
 
-Ce projet est conçu pour être utilisé par des agents IA. Il inclut un fichier `SKILL.md` qui permet à des outils comme **Claude Code** ou **Antigravity** de comprendre et d'exécuter les commandes automatiquement.
-
-### Comment l'utiliser comme Skill :
-1. **Importation** : Si vous utilisez un agent, pointez-le simplement sur ce dépôt ou clonez-le. L'agent détectera le fichier `SKILL.md`.
-2. **Automatisation** : Vous pouvez demander à l'IA :
-   - *"Analyse ce workflow et génère la documentation"*
-   - *"Lance l'exécution de tous les workflows du dossier samples sur le serveur"*
-   - *"Vérifie s'il y a des fichiers de cache trop gros dans mes projets"*
+Ce projet est conçu pour être piloté par des agents IA (Claude Code, Antigravity, etc.). Il inclut un fichier `SKILL.md` et `AGENTS.md` pour une intégration immédiate.
 
 ---
 

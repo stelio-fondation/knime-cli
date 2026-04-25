@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
 import AdmZip from 'adm-zip';
+import chalk from 'chalk';
 import { resolveWorkflowPath } from '../utils/workflow';
 import { parseWorkflowMetadata, WorkflowMetadata } from '../utils/knime-parser';
 
@@ -11,27 +12,27 @@ interface InfoOptions {
 }
 
 function displayInfo(metadata: WorkflowMetadata, systemInfo: { path: string, size: number, mtime: Date }) {
-  console.log('\n=== Workflow System Info ===');
-  console.log(`Path:      ${systemInfo.path}`);
-  console.log(`Size:      ${(systemInfo.size / 1024).toFixed(2)} KB`);
-  console.log(`Modified:  ${systemInfo.mtime.toLocaleString()}`);
+  console.log(chalk.bold.blue('\n=== Workflow System Info ==='));
+  console.log(`${chalk.gray('Path:')}      ${chalk.cyan(systemInfo.path)}`);
+  console.log(`${chalk.gray('Size:')}      ${chalk.yellow((systemInfo.size / 1024).toFixed(2))} KB`);
+  console.log(`${chalk.gray('Modified:')}  ${chalk.magenta(systemInfo.mtime.toLocaleString())}`);
 
-  console.log('\n=== KNIME Metadata ===');
-  console.log(`Name:      ${metadata.name}`);
-  console.log(`Author:    ${metadata.author}`);
-  console.log(`Version:   ${metadata.version}`);
+  console.log(chalk.bold.green('\n=== KNIME Metadata ==='));
+  console.log(`${chalk.gray('Name:')}      ${chalk.bold(metadata.name)}`);
+  console.log(`${chalk.gray('Author:')}    ${chalk.white(metadata.author)}`);
+  console.log(`${chalk.gray('Version:')}   ${chalk.white(metadata.version)}`);
   if (metadata.description) {
-    console.log(`Description: ${metadata.description}`);
+    console.log(`${chalk.gray('Description:')} ${chalk.italic(metadata.description)}`);
   }
 
   if (metadata.nodes.length > 0) {
-    console.log(`\n=== Nodes (Total: ${metadata.nodes.length}) ===`);
+    console.log(chalk.bold.cyan(`\n=== Nodes (Total: ${metadata.nodes.length}) ===`));
     metadata.nodes.forEach(n => {
-      console.log(`[${n.id}] ${n.name}`);
+      console.log(`${chalk.gray('[')}${chalk.yellow(n.id)}${chalk.gray(']')} ${n.name}`);
     });
   } else {
-    console.log('\n=== Nodes ===');
-    console.log('No nodes found or empty workflow.');
+    console.log(chalk.bold.cyan('\n=== Nodes ==='));
+    console.log(chalk.yellow('No nodes found or empty workflow.'));
   }
   console.log('');
 }
@@ -57,7 +58,7 @@ function getWorkflowInfo(targetPath: string, isDir: boolean) {
         xmlData = zip.readAsText(knimeEntry);
       }
     } catch (err) {
-      console.warn('\n[Warning] Could not read .knwf archive.');
+      console.warn(chalk.yellow('\n[Warning] Could not read .knwf archive.'));
     }
   }
 
@@ -66,14 +67,14 @@ function getWorkflowInfo(targetPath: string, isDir: boolean) {
       const metadata = parseWorkflowMetadata(xmlData, fallbackName);
       displayInfo(metadata, { path: targetPath, size: stats.size, mtime: stats.mtime });
     } catch (err) {
-      console.error('\nError: Failed to parse KNIME metadata.');
+      console.error(chalk.red('\nError: Failed to parse KNIME metadata.'));
     }
   } else {
-    console.log('\n=== Workflow System Info ===');
-    console.log(`Path:      ${targetPath}`);
-    console.log(`Size:      ${(stats.size / 1024).toFixed(2)} KB`);
-    console.log(`Modified:  ${stats.mtime.toLocaleString()}`);
-    console.log('\n[Warning] No KNIME metadata found.');
+    console.log(chalk.bold.blue('\n=== Workflow System Info ==='));
+    console.log(`${chalk.gray('Path:')}      ${chalk.cyan(targetPath)}`);
+    console.log(`${chalk.gray('Size:')}      ${chalk.yellow((stats.size / 1024).toFixed(2))} KB`);
+    console.log(`${chalk.gray('Modified:')}  ${chalk.magenta(stats.mtime.toLocaleString())}`);
+    console.log(chalk.yellow('\n[Warning] No KNIME metadata found.'));
   }
 }
 
@@ -86,7 +87,7 @@ export const infoCommand = new Command('info')
       const target = resolveWorkflowPath(options.workflow, options.path);
       getWorkflowInfo(target.targetPath, target.workflowArg === '-workflowDir');
     } catch (err: any) {
-      console.error(`Error: ${err.message}`);
+      console.error(chalk.red(`❌ Error: ${err.message}`));
       process.exit(1);
     }
   });

@@ -18,7 +18,7 @@
     "build": "npx tsc && node scripts/add-shebang.js",
     "start": "node dist/index.js",
     "dev": "npm run build && node dist/index.js",
-    "test": "echo \"Pas de tests\" && exit 0",
+    "test": "jest",
     "link": "npm run build && npm link",
     "prepare": "npm run build"
   },
@@ -34,9 +34,11 @@
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.8",
-    "@types/cli-table3": "^0.0.40",
     "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.19.39",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
     "typescript": "^5.0.0"
   },
   "dependencies": {

@@ -61,6 +61,35 @@ function parseWorkflowMetadata(xmlData, fallbackName) {
             }
         });
     }
+    const variables = [];
+    const variablesConfig = configList.find((c) => c?.['@_key'] === 'workflow_variables');
+    if (variablesConfig) {
+        const varConfigs = variablesConfig.config || [];
+        const varList = Array.isArray(varConfigs) ? varConfigs : [varConfigs];
+        varList.forEach((v) => {
+            const varEntries = Array.isArray(v?.entry) ? v.entry : [v?.entry];
+            const name = varEntries.find((e) => e?.['@_key'] === 'name')?.['@_value'];
+            const type = varEntries.find((e) => e?.['@_key'] === 'class')?.['@_value'];
+            const value = varEntries.find((e) => e?.['@_key'] === 'value')?.['@_value'];
+            if (name) {
+                variables.push({
+                    name,
+                    type: type?.replace('java.lang.', '') || 'String',
+                    value: value || ''
+                });
+            }
+        });
+    }
+    const bundles = [];
+    const metaInfoConfig = configList.find((c) => c?.['@_key'] === 'meta_information');
+    if (metaInfoConfig) {
+        const metaEntries = Array.isArray(metaInfoConfig.entry) ? metaInfoConfig.entry : [metaInfoConfig.entry];
+        const bName = metaEntries.find((e) => e?.['@_key'] === 'bundle_name')?.['@_value'];
+        const bVer = metaEntries.find((e) => e?.['@_key'] === 'bundle_version')?.['@_value'];
+        if (bName) {
+            bundles.push({ name: bName, version: bVer || 'Unknown' });
+        }
+    }
     return {
         name: metadata['name'] || fallbackName,
         author: metadata['author'] || 'Unknown',
@@ -68,7 +97,9 @@ function parseWorkflowMetadata(xmlData, fallbackName) {
         description: metadata['description'] || '',
         nodes,
         connections,
-        annotations
+        annotations,
+        variables,
+        bundles
     };
 }
 //# sourceMappingURL=knime-parser.js.map

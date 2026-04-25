@@ -11,6 +11,8 @@ const validate_1 = require("./commands/validate");
 const config_1 = require("./commands/config");
 const doc_1 = require("./commands/doc");
 const live_1 = require("./commands/live");
+const diff_1 = require("./commands/diff");
+const report_1 = require("./commands/report");
 const program = new commander_1.Command();
 program
     .name('knime')
@@ -29,5 +31,7 @@ program.addCommand(validate_1.validateCommand);
 program.addCommand(config_1.configCommand);
 program.addCommand(doc_1.docCommand);
 program.addCommand(live_1.liveCommand);
+program.addCommand(diff_1.diffCommand);
+program.addCommand(report_1.reportCommand);
 program.parse(process.argv);
 //# sourceMappingURL=index.js.map

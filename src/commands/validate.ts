@@ -1,10 +1,12 @@
 import { Command } from 'commander';
 import * as fs from 'fs';
 import * as path from 'path';
+import chalk from 'chalk';
+import ora from 'ora';
 import { resolveWorkflowPath } from '../utils/workflow';
 import { parseWorkflowMetadata } from '../utils/knime-parser';
 import { getAllFiles } from '../utils/fs';
-import AdmZip = require('adm-zip');
+import AdmZip from 'adm-zip';
 
 interface ValidateOptions {
   workflow: string;
@@ -22,9 +24,10 @@ export const validateCommand = new Command('validate')
     let isValid = true;
     let hasWarnings = false;
 
+    const spinner = ora(`Validating workflow: ${chalk.cyan(options.workflow)}...`).start();
+
     try {
       // 1. Résolution du chemin
-      console.log(`\nValidating workflow: ${options.workflow}...`);
       const target = resolveWorkflowPath(options.workflow, options.path);
       const isDir = target.workflowArg === '-workflowDir';
 
@@ -33,71 +36,79 @@ export const validateCommand = new Command('validate')
       if (isDir) {
         xmlData = fs.readFileSync(path.join(target.targetPath, 'workflow.knime'), 'utf8');
       } else {
-        // ZIP support could be added here, but metadata parser needs the full XML string
-        // We'll use the same logic as info command (centralized parser)
-        // For now, let's assume we read from the same logic
-        // For now, let's assume we read from the same logic
         const zip = new AdmZip(target.targetPath);
         const knimeEntry = zip.getEntries().find((e: any) => e.entryName.endsWith('workflow.knime'));
         if (knimeEntry) xmlData = zip.readAsText(knimeEntry);
       }
 
+      if (!xmlData) {
+        throw new Error('Workflow metadata file (workflow.knime) not found.');
+      }
+
       const metadata = parseWorkflowMetadata(xmlData, options.workflow);
-      console.log('✅ Structure base: OK');
+      spinner.info(chalk.green('Structure base: OK'));
 
       // 3. Vérification des nœuds (Mode dossier seulement)
       if (isDir) {
         let missingNodes = 0;
         metadata.nodes.forEach(node => {
-          // KNIME stores node dirs as "Node Name (#ID)"
-          // But settingsFile in XML is "Node Name (#ID)/settings.xml"
-          // We need to check if the directory exists
           const nodeDir = path.join(target.targetPath, `${node.name} (#${node.id})`);
           if (!fs.existsSync(nodeDir)) {
-            console.error(`❌ Missing node directory: ${node.name} (#${node.id})`);
+            console.error(chalk.red(`   ❌ Missing node directory: ${node.name} (#${node.id})`));
             missingNodes++;
           } else if (!fs.existsSync(path.join(nodeDir, 'settings.xml'))) {
-            console.error(`❌ Missing settings.xml in node: ${node.name} (#${node.id})`);
+            console.error(chalk.red(`   ❌ Missing settings.xml in node: ${node.name} (#${node.id})`));
             missingNodes++;
           }
         });
 
         if (missingNodes === 0) {
-          console.log(`✅ Node consistency: OK (${metadata.nodes.length}/${metadata.nodes.length})`);
+          spinner.info(chalk.green(`Node consistency: OK (${metadata.nodes.length}/${metadata.nodes.length})`));
         } else {
           isValid = false;
+          spinner.warn(chalk.red(`Node consistency: FAILED (${missingNodes} missing)`));
         }
 
         // 4. Scan des fichiers volumineux
-        console.log('\nScanning for large files...');
+        spinner.start('Scanning for large files...');
         const allFiles = getAllFiles(target.targetPath);
         const largeFiles = allFiles.filter(f => f.size > thresholdBytes);
 
         if (largeFiles.length > 0) {
-          console.warn(`⚠️  Found ${largeFiles.length} large file(s) (> ${options.threshold} MB):`);
+          spinner.warn(chalk.yellow(`Found ${largeFiles.length} large file(s) (> ${options.threshold} MB):`));
           largeFiles.forEach(f => {
             const relPath = path.relative(target.targetPath, f.path);
-            console.warn(`   - ${relPath} (${(f.size / 1024 / 1024).toFixed(2)} MB)`);
+            console.warn(chalk.gray(`   - ${relPath} (${chalk.yellow((f.size / 1024 / 1024).toFixed(2))} MB)`));
           });
           hasWarnings = true;
         } else {
-          console.log('✅ No large files detected.');
+          spinner.succeed(chalk.green('No large files detected.'));
         }
+      } else {
+        spinner.info(chalk.gray('Large file scan skipped (archive mode)'));
       }
 
       // Rapport Final
-      console.log('\n-----------------------------------');
+      console.log(chalk.gray('\n-----------------------------------'));
+      console.log(`${chalk.blue('ℹ')} Nodes: ${metadata.nodes.length} | Connections: ${metadata.connections.length} | Variables: ${metadata.variables.length}`);
+      
+      if (metadata.bundles.length > 0) {
+        console.log(`\n${chalk.bold.blue('=== Requirements ===')}`);
+        metadata.bundles.forEach(b => {
+          console.log(`  - ${b.name} (${b.version})`);
+        });
+      }
       if (!isValid) {
-        console.log('Final Status: INVALID ❌');
+        console.log(`${chalk.bold('Final Status:')} ${chalk.bold.red('INVALID ❌')}`);
         process.exit(1);
       } else if (hasWarnings) {
-        console.log('Final Status: VALID (with warnings) ⚠️');
+        console.log(`${chalk.bold('Final Status:')} ${chalk.bold.yellow('VALID (with warnings) ⚠️')}`);
       } else {
-        console.log('Final Status: VALID ✅');
+        console.log(`${chalk.bold('Final Status:')} ${chalk.bold.green('VALID ✅')}`);
       }
 
     } catch (err: any) {
-      console.error(`\n❌ Validation failed: ${err.message}`);
+      spinner.fail(chalk.red(`Validation failed: ${err.message}`));
       process.exit(1);
     }
-  });
+  });

@@ -4,12 +4,13 @@ import express from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import { XMLParser, XMLBuilder } from 'fast-xml-parser';
+import { parseWorkflowMetadata } from '../utils/knime-parser';
 
 export const liveCommand = new Command('live')
   .description('Démarre le serveur de pilotage live pour modifier le workflow en temps réel')
   .requiredOption('-w, --workflow <name>', 'Workflow à piloter')
   .option('-p, --path <path>', 'Chemin du workflow', '.')
-  .option('--port <port>', 'Port du serveur', '3000')
+  .option('--port <port>', 'Port du serveur', '3030')
   .action((options: any) => {
     const app = express();
     app.use(express.json());
@@ -21,12 +22,61 @@ export const liveCommand = new Command('live')
       process.exit(1);
     }
 
-    console.log(chalk.blue.bold('\n🚀 KNIME Live Pilot démarré !'));
-    console.log(chalk.gray(`Workflow : ${workflowPath}`));
-    console.log(chalk.gray(`Port : ${options.port}`));
-    console.log(chalk.yellow('\nEn attente de commandes de pilotage...'));
+    const server = app.listen(options.port, () => {
+      console.log(chalk.blue.bold('\n🚀 KNIME Live Pilot démarré !'));
+      console.log(chalk.gray(`Workflow : ${workflowPath}`));
+      console.log(chalk.green(`URL      : http://localhost:${options.port}`));
+      console.log(chalk.yellow('\nEn attente de commandes de pilotage...'));
+    });
 
-    // Endpoint pour recevoir des commandes de pilotage
+    server.on('error', (err: any) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(chalk.red(`❌ Le port ${options.port} est déjà utilisé. Essayez un autre port avec --port <port>.`));
+      } else {
+        console.error(chalk.red(`❌ Erreur lors du démarrage du serveur : ${err.message}`));
+      }
+      process.exit(1);
+    });
+
+    // GET / : Accueil et Status
+    app.get('/', (req, res) => {
+      console.log(chalk.gray('[GET] / requested'));
+      res.send(`
+        <div style="font-family: sans-serif; padding: 2rem;">
+          <h1>🚀 KNIME Live Pilot is Running</h1>
+          <p>Status: <span style="color: green;"><b>Active</b></span></p>
+          <p>Available Endpoints:</p>
+          <ul>
+            <li><a href="/nodes">/nodes</a> - List workflow nodes</li>
+            <li><a href="/variables">/variables</a> - List workflow variables</li>
+          </ul>
+        </div>
+      `);
+    });
+
+    // GET /nodes : Liste les nœuds
+    app.get('/nodes', (req, res) => {
+      try {
+        const xmlData = fs.readFileSync(workflowPath, 'utf8');
+        const metadata = parseWorkflowMetadata(xmlData, options.workflow);
+        res.json(metadata.nodes);
+      } catch (err: any) {
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    // GET /variables : Liste les variables
+    app.get('/variables', (req, res) => {
+      try {
+        const xmlData = fs.readFileSync(workflowPath, 'utf8');
+        const metadata = parseWorkflowMetadata(xmlData, options.workflow);
+        res.json(metadata.variables);
+      } catch (err: any) {
+        res.status(500).json({ error: err.message });
+      }
+    });
+
+    // POST /pilot : Actions de modification
     app.post('/pilot', (req: express.Request, res: express.Response) => {
       const { action, data } = req.body;
       
@@ -37,6 +87,12 @@ export const liveCommand = new Command('live')
           return res.json({ status: 'ok', message: 'Annotation ajoutée' });
         }
 
+        if (action === 'update_variable') {
+          updateVariable(workflowPath, data.name, data.value);
+          console.log(chalk.green(`✅ Variable mise à jour : ${data.name} = ${data.value}`));
+          return res.json({ status: 'ok', message: 'Variable mise à jour' });
+        }
+
         res.status(400).json({ status: 'error', message: 'Action inconnue' });
       } catch (err: any) {
         console.error(chalk.red(`❌ Erreur pilotage : ${err.message}`));
@@ -44,7 +100,6 @@ export const liveCommand = new Command('live')
       }
     });
 
-    app.listen(options.port);
   });
 
 /**
@@ -85,6 +140,56 @@ function addAnnotation(filePath: string, text: string, x: number = 0, y: number 
 
   if (!Array.isArray(annotationsConfig.config)) annotationsConfig.config = [];
   annotationsConfig.config.push(newAnnotation);
+
+  const newXml = builder.build(jsonObj);
+  fs.writeFileSync(filePath, '<?xml version="1.0" encoding="UTF-8"?>\n' + newXml, { encoding: 'utf8' });
+}
+
+/**
+ * Met à jour ou ajoute une variable de workflow
+ */
+function updateVariable(filePath: string, name: string, value: string) {
+  const xmlData = fs.readFileSync(filePath, 'utf8');
+  const parser = new XMLParser({ ignoreAttributes: false });
+  const builder = new XMLBuilder({ ignoreAttributes: false, format: true });
+
+  const jsonObj = parser.parse(xmlData);
+  if (!jsonObj.config) jsonObj.config = { config: [] };
+
+  let configs = Array.isArray(jsonObj.config.config) ? jsonObj.config.config : [jsonObj.config.config];
+  let variablesConfig = configs.find((c: any) => c['@_key'] === 'workflow_variables');
+
+  if (!variablesConfig) {
+    variablesConfig = { '@_key': 'workflow_variables', config: [] };
+    if (!Array.isArray(jsonObj.config.config)) jsonObj.config.config = [];
+    jsonObj.config.config.push(variablesConfig);
+  }
+
+  const varList = Array.isArray(variablesConfig.config) ? variablesConfig.config : (variablesConfig.config ? [variablesConfig.config] : []);
+  
+  // Chercher si la variable existe déjà
+  let existingVar = varList.find((v: any) => {
+    const entries = Array.isArray(v.entry) ? v.entry : [v.entry];
+    return entries.find((e: any) => e['@_key'] === 'name' && e['@_value'] === name);
+  });
+
+  if (existingVar) {
+    const entries = Array.isArray(existingVar.entry) ? existingVar.entry : [existingVar.entry];
+    const valueEntry = entries.find((e: any) => e['@_key'] === 'value');
+    if (valueEntry) valueEntry['@_value'] = value;
+  } else {
+    const nextId = varList.length;
+    const newVar = {
+      '@_key': `variable_${nextId}`,
+      entry: [
+        { '@_key': 'name', '@_type': 'xstring', '@_value': name },
+        { '@_key': 'class', '@_type': 'xstring', '@_value': 'java.lang.String' },
+        { '@_key': 'value', '@_type': 'xstring', '@_value': value }
+      ]
+    };
+    if (!Array.isArray(variablesConfig.config)) variablesConfig.config = [];
+    variablesConfig.config.push(newVar);
+  }
 
   const newXml = builder.build(jsonObj);
   fs.writeFileSync(filePath, '<?xml version="1.0" encoding="UTF-8"?>\n' + newXml, { encoding: 'utf8' });

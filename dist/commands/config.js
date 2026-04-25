@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.configCommand = void 0;
 const commander_1 = require("commander");
 const chalk_1 = __importDefault(require("chalk"));
+const cli_table3_1 = __importDefault(require("cli-table3"));
 const config_1 = __importDefault(require("../utils/config"));
 exports.configCommand = new commander_1.Command('config')
     .description('Gère la configuration globale du CLI');
@@ -37,8 +38,28 @@ exports.configCommand
     .command('list')
     .description('Liste toute la configuration')
     .action(() => {
+    const table = new cli_table3_1.default({
+        head: [chalk_1.default.blue('Clé'), chalk_1.default.blue('Valeur')]
+    });
+    const store = config_1.default.store;
+    const flatten = (obj, prefix = '') => {
+        let entries = [];
+        for (const [key, value] of Object.entries(obj)) {
+            const fullKey = prefix ? `${prefix}.${key}` : key;
+            if (value && typeof value === 'object' && !Array.isArray(value)) {
+                entries = entries.concat(flatten(value, fullKey));
+            }
+            else {
+                entries.push([fullKey, JSON.stringify(value)]);
+            }
+        }
+        return entries;
+    };
+    flatten(store).forEach(([k, v]) => {
+        table.push([chalk_1.default.cyan(k), v]);
+    });
     console.log(chalk_1.default.bold('\n=== Configuration Globale ==='));
-    console.log(JSON.stringify(config_1.default.store, null, 2));
+    console.log(table.toString());
     console.log('');
 });
 exports.configCommand

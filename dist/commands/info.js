@@ -41,29 +41,30 @@ const commander_1 = require("commander");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
 const adm_zip_1 = __importDefault(require("adm-zip"));
+const chalk_1 = __importDefault(require("chalk"));
 const workflow_1 = require("../utils/workflow");
 const knime_parser_1 = require("../utils/knime-parser");
 function displayInfo(metadata, systemInfo) {
-    console.log('\n=== Workflow System Info ===');
-    console.log(`Path:      ${systemInfo.path}`);
-    console.log(`Size:      ${(systemInfo.size / 1024).toFixed(2)} KB`);
-    console.log(`Modified:  ${systemInfo.mtime.toLocaleString()}`);
-    console.log('\n=== KNIME Metadata ===');
-    console.log(`Name:      ${metadata.name}`);
-    console.log(`Author:    ${metadata.author}`);
-    console.log(`Version:   ${metadata.version}`);
+    console.log(chalk_1.default.bold.blue('\n=== Workflow System Info ==='));
+    console.log(`${chalk_1.default.gray('Path:')}      ${chalk_1.default.cyan(systemInfo.path)}`);
+    console.log(`${chalk_1.default.gray('Size:')}      ${chalk_1.default.yellow((systemInfo.size / 1024).toFixed(2))} KB`);
+    console.log(`${chalk_1.default.gray('Modified:')}  ${chalk_1.default.magenta(systemInfo.mtime.toLocaleString())}`);
+    console.log(chalk_1.default.bold.green('\n=== KNIME Metadata ==='));
+    console.log(`${chalk_1.default.gray('Name:')}      ${chalk_1.default.bold(metadata.name)}`);
+    console.log(`${chalk_1.default.gray('Author:')}    ${chalk_1.default.white(metadata.author)}`);
+    console.log(`${chalk_1.default.gray('Version:')}   ${chalk_1.default.white(metadata.version)}`);
     if (metadata.description) {
-        console.log(`Description: ${metadata.description}`);
+        console.log(`${chalk_1.default.gray('Description:')} ${chalk_1.default.italic(metadata.description)}`);
     }
     if (metadata.nodes.length > 0) {
-        console.log(`\n=== Nodes (Total: ${metadata.nodes.length}) ===`);
+        console.log(chalk_1.default.bold.cyan(`\n=== Nodes (Total: ${metadata.nodes.length}) ===`));
         metadata.nodes.forEach(n => {
-            console.log(`[${n.id}] ${n.name}`);
+            console.log(`${chalk_1.default.gray('[')}${chalk_1.default.yellow(n.id)}${chalk_1.default.gray(']')} ${n.name}`);
         });
     }
     else {
-        console.log('\n=== Nodes ===');
-        console.log('No nodes found or empty workflow.');
+        console.log(chalk_1.default.bold.cyan('\n=== Nodes ==='));
+        console.log(chalk_1.default.yellow('No nodes found or empty workflow.'));
     }
     console.log('');
 }
@@ -88,7 +89,7 @@ function getWorkflowInfo(targetPath, isDir) {
             }
         }
         catch (err) {
-            console.warn('\n[Warning] Could not read .knwf archive.');
+            console.warn(chalk_1.default.yellow('\n[Warning] Could not read .knwf archive.'));
         }
     }
     if (xmlData) {
@@ -97,15 +98,15 @@ function getWorkflowInfo(targetPath, isDir) {
             displayInfo(metadata, { path: targetPath, size: stats.size, mtime: stats.mtime });
         }
         catch (err) {
-            console.error('\nError: Failed to parse KNIME metadata.');
+            console.error(chalk_1.default.red('\nError: Failed to parse KNIME metadata.'));
         }
     }
     else {
-        console.log('\n=== Workflow System Info ===');
-        console.log(`Path:      ${targetPath}`);
-        console.log(`Size:      ${(stats.size / 1024).toFixed(2)} KB`);
-        console.log(`Modified:  ${stats.mtime.toLocaleString()}`);
-        console.log('\n[Warning] No KNIME metadata found.');
+        console.log(chalk_1.default.bold.blue('\n=== Workflow System Info ==='));
+        console.log(`${chalk_1.default.gray('Path:')}      ${chalk_1.default.cyan(targetPath)}`);
+        console.log(`${chalk_1.default.gray('Size:')}      ${chalk_1.default.yellow((stats.size / 1024).toFixed(2))} KB`);
+        console.log(`${chalk_1.default.gray('Modified:')}  ${chalk_1.default.magenta(stats.mtime.toLocaleString())}`);
+        console.log(chalk_1.default.yellow('\n[Warning] No KNIME metadata found.'));
     }
 }
 exports.infoCommand = new commander_1.Command('info')
@@ -118,7 +119,7 @@ exports.infoCommand = new commander_1.Command('info')
         getWorkflowInfo(target.targetPath, target.workflowArg === '-workflowDir');
     }
     catch (err) {
-        console.error(`Error: ${err.message}`);
+        console.error(chalk_1.default.red(`❌ Error: ${err.message}`));
         process.exit(1);
     }
 });

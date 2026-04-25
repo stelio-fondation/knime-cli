@@ -9,6 +9,8 @@ export interface WorkflowMetadata {
   nodes: { id: string; name: string }[];
   connections: { sourceID: string; destID: string }[];
   annotations: string[];
+  variables: { name: string; type: string; value: string }[];
+  bundles: { name: string; version: string }[];
 }
 
 interface KnimeEntry {
@@ -89,6 +91,39 @@ export function parseWorkflowMetadata(xmlData: string, fallbackName: string): Wo
     });
   }
 
+  const variables: { name: string; type: string; value: string }[] = [];
+  const variablesConfig = configList.find((c: any) => c?.['@_key'] === 'workflow_variables');
+
+  if (variablesConfig) {
+    const varConfigs = variablesConfig.config || [];
+    const varList = Array.isArray(varConfigs) ? varConfigs : [varConfigs];
+
+    varList.forEach((v: any) => {
+      const varEntries = Array.isArray(v?.entry) ? v.entry : [v?.entry];
+      const name = varEntries.find((e: any) => e?.['@_key'] === 'name')?.['@_value'];
+      const type = varEntries.find((e: any) => e?.['@_key'] === 'class')?.['@_value'];
+      const value = varEntries.find((e: any) => e?.['@_key'] === 'value')?.['@_value'];
+      if (name) {
+        variables.push({ 
+          name, 
+          type: type?.replace('java.lang.', '') || 'String', 
+          value: value || '' 
+        });
+      }
+    });
+  }
+
+  const bundles: { name: string; version: string }[] = [];
+  const metaInfoConfig = configList.find((c: any) => c?.['@_key'] === 'meta_information');
+  if (metaInfoConfig) {
+    const metaEntries = Array.isArray(metaInfoConfig.entry) ? metaInfoConfig.entry : [metaInfoConfig.entry];
+    const bName = metaEntries.find((e: any) => e?.['@_key'] === 'bundle_name')?.['@_value'];
+    const bVer = metaEntries.find((e: any) => e?.['@_key'] === 'bundle_version')?.['@_value'];
+    if (bName) {
+      bundles.push({ name: bName, version: bVer || 'Unknown' });
+    }
+  }
+
   return {
     name: metadata['name'] || fallbackName,
     author: metadata['author'] || 'Unknown',
@@ -96,6 +131,8 @@ export function parseWorkflowMetadata(xmlData: string, fallbackName: string): Wo
     description: metadata['description'] || '',
     nodes,
     connections,
-    annotations
+    annotations,
+    variables,
+    bundles
   };
 }
