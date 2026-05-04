@@ -72,20 +72,21 @@ exports.liveCommand = new commander_1.Command('live')
         }
         process.exit(1);
     });
-    // GET / : Accueil et Status
+    // GET / : Dashboard Web
     app.get('/', (req, res) => {
-        console.log(chalk_1.default.gray('[GET] / requested'));
-        res.send(`
-        <div style="font-family: sans-serif; padding: 2rem;">
-          <h1>🚀 KNIME Live Pilot is Running</h1>
-          <p>Status: <span style="color: green;"><b>Active</b></span></p>
-          <p>Available Endpoints:</p>
-          <ul>
-            <li><a href="/nodes">/nodes</a> - List workflow nodes</li>
-            <li><a href="/variables">/variables</a> - List workflow variables</li>
-          </ul>
-        </div>
-      `);
+        // On cherche d'abord dans dist (prod) puis dans src (dev)
+        const possiblePaths = [
+            path.join(__dirname, '../resources/dashboard.html'),
+            path.join(__dirname, '../../src/resources/dashboard.html'),
+            path.join(process.cwd(), 'src/resources/dashboard.html')
+        ];
+        const dashPath = possiblePaths.find(p => fs.existsSync(p));
+        if (dashPath) {
+            res.sendFile(dashPath);
+        }
+        else {
+            res.status(404).send('Dashboard template not found. Please ensure src/resources/dashboard.html exists.');
+        }
     });
     // GET /nodes : Liste les nœuds
     app.get('/nodes', (req, res) => {

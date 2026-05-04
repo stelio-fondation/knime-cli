@@ -14,6 +14,11 @@ const live_1 = require("./commands/live");
 const diff_1 = require("./commands/diff");
 const report_1 = require("./commands/report");
 const install_skill_1 = require("./commands/install-skill");
+const lineage_1 = require("./commands/lineage");
+const create_1 = require("./commands/create");
+const add_node_1 = require("./commands/add-node");
+const connect_1 = require("./commands/connect");
+const build_1 = require("./commands/build");
 const program = new commander_1.Command();
 program
     .name('knime')
@@ -35,5 +40,10 @@ program.addCommand(live_1.liveCommand);
 program.addCommand(diff_1.diffCommand);
 program.addCommand(report_1.reportCommand);
 program.addCommand(install_skill_1.installSkillCommand);
+program.addCommand(lineage_1.lineageCommand);
+program.addCommand(create_1.createCommand);
+program.addCommand(add_node_1.addNodeCommand);
+program.addCommand(connect_1.connectCommand);
+program.addCommand(build_1.buildCommand);
 program.parse(process.argv);
 //# sourceMappingURL=index.js.map

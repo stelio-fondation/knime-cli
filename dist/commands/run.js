@@ -38,6 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runCommand = void 0;
 const commander_1 = require("commander");
+const axios_1 = __importDefault(require("axios"));
 const server_api_1 = require("../utils/server-api");
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
@@ -92,6 +93,7 @@ exports.runCommand = new commander_1.Command('run')
     .option('-k, --knime-path <path>', 'Chemin vers KNIME')
     .option('-v, --verbose', 'Afficher la sortie KNIME')
     .option('--save', 'Sauvegarder le workflow après exécution')
+    .option('--webhook <url>', 'URL du webhook pour les notifications')
     .action(async (options) => {
     if (options.server) {
         const spinner = (0, ora_1.default)(`Connecting to KNIME Server...`).start();
@@ -154,6 +156,9 @@ exports.runCommand = new commander_1.Command('run')
     }
     const params = parseParams(options.params || '{}');
     const spinner = (0, ora_1.default)(`Executing workflow: ${chalk_1.default.cyan(options.workflow)}...`).start();
+    if (options.webhook) {
+        notifyWebhook(options.webhook, 'workflow_started', options.workflow, 'running');
+    }
     if (options.verbose) {
         spinner.stop();
         console.log(chalk_1.default.blue(`\nExecuting: ${targetPath}`));
@@ -191,6 +196,9 @@ exports.runCommand = new commander_1.Command('run')
         if (proc.pid)
             (0, registry_1.removeExecution)(proc.pid);
         spinner.fail(chalk_1.default.red(`Error: ${err.message}`));
+        if (options.webhook) {
+            notifyWebhook(options.webhook, 'workflow_error', options.workflow, 'error', { error: err.message });
+        }
         process.exit(1);
     });
     proc.on('close', (code) => {
@@ -198,11 +206,31 @@ exports.runCommand = new commander_1.Command('run')
             (0, registry_1.removeExecution)(proc.pid);
         if (code === 0) {
             spinner.succeed(chalk_1.default.green('Workflow executed successfully.'));
+            if (options.webhook) {
+                notifyWebhook(options.webhook, 'workflow_finished', options.workflow, 'success');
+            }
         }
         else {
             spinner.fail(chalk_1.default.red(`Workflow failed with code: ${code}`));
+            if (options.webhook) {
+                notifyWebhook(options.webhook, 'workflow_failed', options.workflow, 'failed', { code });
+            }
             process.exit(code || 1);
         }
     });
 });
+async function notifyWebhook(url, event, workflow, status, details) {
+    try {
+        await axios_1.default.post(url, {
+            event,
+            workflow,
+            status,
+            details,
+            timestamp: new Date().toISOString()
+        });
+    }
+    catch (e) {
+        console.warn(chalk_1.default.yellow(`\n⚠️ Webhook notification failed (${url}): ${e.message}`));
+    }
+}
 //# sourceMappingURL=run.js.map

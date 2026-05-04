@@ -16,6 +16,7 @@
 *   📊 **Live Pilot** : Modifiez vos workflows en temps réel (variables, annotations) via une API REST intégrée.
 *   🔍 **Analyse & Validation** : Inspectez les métadonnées, listez les nœuds, les dépendances (extensions) et validez l'intégrité de vos projets.
 *   📊 **Lignage des données** : Visualisez le flux de données entre les nœuds avec la commande `lineage`.
+*   🏗️ **Génération & Composition** : Créez des workflows à partir d'un prompt (`build`) ou assemblez-les nœud par nœud (`add-node`, `connect`).
 *   ⚖️ **Comparaison (Diff)** : Comparez deux versions d'un workflow pour voir les nœuds et variables ajoutés ou modifiés.
 *   📄 **Reporting & Doc** : Générez des rapports Markdown complets et des diagrammes de flux **Mermaid.js**.
 *   🤖 **AI-Ready** : Inclut une "Skill Specification" pour permettre aux agents IA de piloter vos workflows.
@@ -59,7 +60,22 @@ knime validate -w MonWorkflow
 knime lineage -w MonWorkflow # Affiche le flux de données
 ```
 
-### 2. Comparer deux workflows
+### 2. Création & Composition 🏗️
+
+#### Générer un workflow via un prompt
+```bash
+knime build -w MonAnalyse --prompt "lit un csv, filtre les lignes et écrit en excel"
+```
+
+#### Composer manuellement (Expert/Agents)
+```bash
+knime create MonProjet
+knime add-node -w MonProjet --type "CSV Reader" --id 1
+knime add-node -w MonProjet --type "GroupBy" --id 2
+knime connect -w MonProjet --from 1:1 --to 2:1
+```
+
+### 3. Comparer deux workflows
 ```bash
 knime diff --w1 Workflow_V1 --w2 Workflow_V2
 knime diff --w1 Workflow_V1 --w2 Workflow_V2 --html rapport.html # Diff graphique HTML

@@ -12,6 +12,10 @@ import { diffCommand } from './commands/diff';
 import { reportCommand } from './commands/report';
 import { installSkillCommand } from './commands/install-skill';
 import { lineageCommand } from './commands/lineage';
+import { createCommand } from './commands/create';
+import { addNodeCommand } from './commands/add-node';
+import { connectCommand } from './commands/connect';
+import { buildCommand } from './commands/build';
 
 
 const program = new Command();
@@ -39,6 +43,10 @@ program.addCommand(diffCommand);
 program.addCommand(reportCommand);
 program.addCommand(installSkillCommand);
 program.addCommand(lineageCommand);
+program.addCommand(createCommand);
+program.addCommand(addNodeCommand);
+program.addCommand(connectCommand);
+program.addCommand(buildCommand);
 
 
 program.parse(process.argv);
