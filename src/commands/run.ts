@@ -1,4 +1,6 @@
 import { Command } from 'commander';
+import axios from 'axios';
+
 import { KnimeServerClient } from '../utils/server-api';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,6 +19,7 @@ interface RunOptions {
   knimePath?: string;
   verbose?: boolean;
   save?: boolean;
+  webhook?: string;
 }
 
 function findKnimeBatch(knimePath?: string): string | null {
@@ -67,6 +70,7 @@ export const runCommand = new Command('run')
   .option('-k, --knime-path <path>', 'Chemin vers KNIME')
   .option('-v, --verbose', 'Afficher la sortie KNIME')
   .option('--save', 'Sauvegarder le workflow après exécution')
+  .option('--webhook <url>', 'URL du webhook pour les notifications')
   .action(async (options: RunOptions) => {
     if (options.server) {
       const spinner = ora(`Connecting to KNIME Server...`).start();
@@ -134,6 +138,11 @@ export const runCommand = new Command('run')
     const params = parseParams(options.params || '{}');
     const spinner = ora(`Executing workflow: ${chalk.cyan(options.workflow)}...`).start();
 
+    if (options.webhook) {
+      notifyWebhook(options.webhook, 'workflow_started', options.workflow, 'running');
+    }
+
+
     if (options.verbose) {
       spinner.stop();
       console.log(chalk.blue(`\nExecuting: ${targetPath}`));
@@ -177,16 +186,40 @@ export const runCommand = new Command('run')
     proc.on('error', (err: any) => {
       if (proc.pid) removeExecution(proc.pid);
       spinner.fail(chalk.red(`Error: ${err.message}`));
+      if (options.webhook) {
+        notifyWebhook(options.webhook, 'workflow_error', options.workflow, 'error', { error: err.message });
+      }
       process.exit(1);
     });
+
 
     proc.on('close', (code: number) => {
       if (proc.pid) removeExecution(proc.pid);
       if (code === 0) {
         spinner.succeed(chalk.green('Workflow executed successfully.'));
+        if (options.webhook) {
+          notifyWebhook(options.webhook, 'workflow_finished', options.workflow, 'success');
+        }
       } else {
         spinner.fail(chalk.red(`Workflow failed with code: ${code}`));
+        if (options.webhook) {
+          notifyWebhook(options.webhook, 'workflow_failed', options.workflow, 'failed', { code });
+        }
         process.exit(code || 1);
       }
     });
   });
+
+async function notifyWebhook(url: string, event: string, workflow: string, status: string, details?: any) {
+  try {
+    await axios.post(url, {
+      event,
+      workflow,
+      status,
+      details,
+      timestamp: new Date().toISOString()
+    });
+  } catch (e: any) {
+    console.warn(chalk.yellow(`\n⚠️ Webhook notification failed (${url}): ${e.message}`));
+  }
+}
