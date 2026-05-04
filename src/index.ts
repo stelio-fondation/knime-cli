@@ -10,6 +10,7 @@ import { docCommand } from './commands/doc';
 import { liveCommand } from './commands/live';
 import { diffCommand } from './commands/diff';
 import { reportCommand } from './commands/report';
+import { installSkillCommand } from './commands/install-skill';
 
 const program = new Command();
 
@@ -34,5 +35,6 @@ program.addCommand(docCommand);
 program.addCommand(liveCommand);
 program.addCommand(diffCommand);
 program.addCommand(reportCommand);
+program.addCommand(installSkillCommand);
 
 program.parse(process.argv);

@@ -91,7 +91,13 @@ Invoke-RestMethod -Method Post -Uri "http://localhost:3030/pilot" `
 
 ## 🤖 AI Agent & Skill Support
 
-Ce projet est conçu pour être piloté par des agents IA (Claude Code, Antigravity, etc.). Il inclut un fichier `SKILL.md` et `AGENTS.md` pour une intégration immédiate.
+Ce projet est conçu pour être piloté par des agents IA (Antigravity/Gemini, Claude Code, Opencode, Hermes, etc.). 
+Pour limiter la consommation de tokens et apprendre à votre IA comment piloter KNIME via ce CLI, vous pouvez déployer automatiquement la "Skill" ultra-condensée dans vos environnements locaux :
+
+```bash
+knime install-skill
+```
+*(Cette commande va scanner les dossiers de vos agents et y copier `SKILL.md` pour une intégration immédiate).*
 
 ---
 
