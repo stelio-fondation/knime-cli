@@ -45,6 +45,8 @@ const chalk_1 = __importDefault(require("chalk"));
 exports.installSkillCommand = new commander_1.Command('install-skill')
     .description('Déploie knime-cli en tant que skill dans les environnements globaux des agents IA (Antigravity, Claude Code, Opencode, Hermes)')
     .option('--dry-run', 'Affiche les chemins sans copier les fichiers')
+    .option('--force-all', 'Crée de force les répertoires d\'agents manquants')
+    .option('--path <dir>', 'Spécifie un chemin personnalisé pour installer la skill')
     .action(async (options) => {
     try {
         console.log(chalk_1.default.blue('🔍 Recherche des environnements d\'agents IA...'));
@@ -56,6 +58,9 @@ exports.installSkillCommand = new commander_1.Command('install-skill')
             { name: 'Opencode', path: path.join(home, '.opencode', 'skills') },
             { name: 'Hermes', path: path.join(home, '.hermes', 'skills') },
         ];
+        if (options.path) {
+            skillTargets.push({ name: 'Chemin Personnalisé', path: path.resolve(options.path) });
+        }
         // Localisation de SKILL.md dans le package npm (../.. car ce fichier sera dans dist/commands/)
         const skillSourcePath = path.join(__dirname, '..', '..', 'SKILL.md');
         if (!fs.existsSync(skillSourcePath)) {
@@ -64,6 +69,10 @@ exports.installSkillCommand = new commander_1.Command('install-skill')
         }
         let installedCount = 0;
         for (const target of skillTargets) {
+            // Si --force-all est actif, on crée le dossier racine de la skill s'il n'existe pas
+            if (options.forceAll && !fs.existsSync(target.path)) {
+                fs.mkdirSync(target.path, { recursive: true });
+            }
             if (fs.existsSync(target.path)) {
                 const destDir = path.join(target.path, 'knime-cli');
                 const destFile = path.join(destDir, 'SKILL.md');

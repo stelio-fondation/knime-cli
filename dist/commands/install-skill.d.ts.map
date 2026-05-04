@@ -1,1 +1,1 @@
-{"version":3,"file":"install-skill.d.ts","sourceRoot":"","sources":["../../src/commands/install-skill.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAMpC,eAAO,MAAM,mBAAmB,SA0D5B,CAAC"}
+{"version":3,"file":"install-skill.d.ts","sourceRoot":"","sources":["../../src/commands/install-skill.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,MAAM,WAAW,CAAC;AAMpC,eAAO,MAAM,mBAAmB,SAqE5B,CAAC"}
