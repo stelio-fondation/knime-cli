@@ -53,12 +53,14 @@ knime config set local.knimePath "C:\Program Files\KNIME\knime.exe"
 Obtenez les métadonnées et validez l'intégrité (nœuds manquants, extensions requises) :
 ```bash
 knime info -w MonWorkflow
+knime info -w MonWorkflow --json --out result.json # Export JSON
 knime validate -w MonWorkflow
 ```
 
 ### 2. Comparer deux workflows
 ```bash
 knime diff --w1 Workflow_V1 --w2 Workflow_V2
+knime diff --w1 Workflow_V1 --w2 Workflow_V2 --html rapport.html # Diff graphique HTML
 ```
 
 ### 3. Exécuter un workflow

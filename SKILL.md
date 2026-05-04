@@ -17,11 +17,11 @@ La résolution des workflows est **récursive** : vous pouvez spécifier juste l
 ## Commandes Disponibles
 
 ### 1. Analyse et Information
-- `knime info -w <workflow>` : Affiche les métadonnées (auteur, version, description) et la liste des nœuds.
+- `knime info -w <workflow>` : Affiche les métadonnées (auteur, version, description) et la liste des nœuds. (Utilisez `--json` pour sortir en JSON pur, et `--out <file>` pour sauvegarder).
 - `knime list -p <path>` : Liste tous les workflows présents dans un dossier.
 
 ### 2. Validation et Qualité
-- `knime validate -p <workflow_path>` : Vérifie l'intégrité du workflow et détecte les fichiers de cache volumineux (données temporaires oubliées).
+- `knime validate -w <workflow_path>` : Vérifie l'intégrité du workflow, liste les extensions KNIME requises, et détecte les fichiers de cache volumineux.
 
 ### 3. Exécution
 - `knime run -w <workflow>` : Lance l'exécution locale en mode batch.
@@ -31,10 +31,17 @@ La résolution des workflows est **récursive** : vous pouvez spécifier juste l
 - `knime status` : Affiche un tableau des exécutions locales en cours (PID, workflow, temps).
 - `knime stop --all` ou `knime stop --pid <pid>` : Arrête proprement les processus KNIME lancés par le CLI.
 
-### 5. Documentation
+### 5. Documentation & Reporting
 - `knime doc -w <workflow>` : Génère un rapport `README.md` avec un diagramme **Mermaid** du flux et les annotations de documentation.
+- `knime report -w <workflow>` : Génère un rapport structuré au format Markdown.
 
-### 6. Configuration
+### 6. Comparaison (Diff)
+- `knime diff --w1 <wf1> --w2 <wf2>` : Identifie et affiche les nœuds et variables ajoutés, retirés ou modifiés. (Option `--html <file>` pour générer un rapport web).
+
+### 7. Pilotage temps réel (Live Pilot)
+- `knime live -w <workflow>` : Démarre un serveur (port 3030) offrant une API REST pour modifier les variables/annotations d'un workflow à la volée.
+
+### 8. Configuration
 - `knime config set local.knimePath <path>` : Définit le chemin vers l'exécutable KNIME.
 - `knime config set server.url <url>` : Définit l'URL du KNIME Server.
 
