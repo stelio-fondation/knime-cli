@@ -23,11 +23,11 @@
 
 ## 🛠 Installation
 
-Installez l'outil globalement depuis GitHub :
+Installez l'outil globalement depuis GitHub (en utilisant l'URL tarball pour éviter un bug de symlink connu de NPM sur Windows) :
 
 ```bash
 # Installe knime et l'alias knime-cli
-npm install -g stelio-fondation/knime-cli
+npm install -g https://github.com/stelio-fondation/knime-cli/tarball/master
 ```
 
 ### 📋 Pré-requis
