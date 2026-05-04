@@ -16,7 +16,9 @@ description: CLI expert for KNIME workflows (run, validate, diff, doc, live).
 - `knime doc -w <wf>`: Generate Markdown + Mermaid diagram.
 - `knime report -w <wf>`: Detailed markdown report.
 - `knime diff --w1 <wf1> --w2 <wf2>`: Structural diff.
-- `knime live -w <wf>`: Start REST pilot server (port 3030).
+- `knime lineage -w <wf>`: View data flow/connections.
+- `knime live -w <wf>`: Pilot server & Dashboard (port 3030).
 - `knime config set <key> <val>`: Configure `local.knimePath` or `server.url`.
+- `knime run -w <wf> [--webhook <url>]`: Execute with notification.
 
 **Full Docs & Repo**: https://github.com/stelio-fondation/knime-cli

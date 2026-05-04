@@ -15,6 +15,7 @@
 *   🏃 **Exécution flexible** : Lancez vos workflows en mode local (Batch) ou à distance sur un KNIME Server via API REST.
 *   📊 **Live Pilot** : Modifiez vos workflows en temps réel (variables, annotations) via une API REST intégrée.
 *   🔍 **Analyse & Validation** : Inspectez les métadonnées, listez les nœuds, les dépendances (extensions) et validez l'intégrité de vos projets.
+*   📊 **Lignage des données** : Visualisez le flux de données entre les nœuds avec la commande `lineage`.
 *   ⚖️ **Comparaison (Diff)** : Comparez deux versions d'un workflow pour voir les nœuds et variables ajoutés ou modifiés.
 *   📄 **Reporting & Doc** : Générez des rapports Markdown complets et des diagrammes de flux **Mermaid.js**.
 *   🤖 **AI-Ready** : Inclut une "Skill Specification" pour permettre aux agents IA de piloter vos workflows.
@@ -55,6 +56,7 @@ Obtenez les métadonnées et validez l'intégrité (nœuds manquants, extensions
 knime info -w MonWorkflow
 knime info -w MonWorkflow --json --out result.json # Export JSON
 knime validate -w MonWorkflow
+knime lineage -w MonWorkflow # Affiche le flux de données
 ```
 
 ### 2. Comparer deux workflows
@@ -67,6 +69,7 @@ knime diff --w1 Workflow_V1 --w2 Workflow_V2 --html rapport.html # Diff graphiqu
 ```bash
 knime run -w MonWorkflow
 knime run -w MonWorkflow --server --params '{"var1": "val1"}'
+knime run -w MonWorkflow --webhook http://votre-api.com/webhook # Notification de fin
 ```
 
 ### 4. Générer des rapports
@@ -78,7 +81,7 @@ knime doc -w MonWorkflow # Génère un README.md avec diagramme Mermaid
 ### 5. Live Pilot 🚀
 Pilotez votre workflow en temps réel :
 ```bash
-# Démarre le serveur sur le port 3030
+# Démarre le serveur et ouvre le Dashboard sur http://localhost:3030
 knime live -w MonWorkflow
 
 # Modifier une variable via PowerShell
