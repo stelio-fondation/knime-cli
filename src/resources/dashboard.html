@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KNIME Live Pilot</title>
+    <style>
+        :root { --bg: #0d1117; --text: #c9d1d9; --accent: #58a6ff; --border: #30363d; }
+        body { background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        header { padding: 1rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        main { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); overflow: hidden; }
+        section { background: var(--bg); padding: 1.5rem; overflow-y: auto; }
+        h2 { color: var(--accent); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0; }
+        .node-card, .var-card { padding: 0.75rem; border: 1px solid var(--border); margin-bottom: 0.5rem; border-radius: 4px; font-size: 0.85rem; }
+        .node-card:hover { border-color: var(--accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <div>KNIME_CLI // LIVE_PILOT</div>
+        <div id="status">● CONNECTED</div>
+    </header>
+    <main>
+        <section id="nodes-section">
+            <h2>Workflow Nodes</h2>
+            <div id="nodes-list">Loading...</div>
+        </section>
+        <section id="vars-section">
+            <h2>Workflow Variables</h2>
+            <div id="vars-list">Loading...</div>
+        </section>
+    </main>
+    <script>
+        async function refresh() {
+            try {
+                const [nodes, vars] = await Promise.all([
+                    fetch('/nodes').then(r => r.json()),
+                    fetch('/variables').then(r => r.json())
+                ]);
+                document.getElementById('nodes-list').innerHTML = nodes.map(n => `
+                    <div class="node-card">[${n.id}] ${n.name}</div>
+                `).join('');
+                document.getElementById('vars-list').innerHTML = vars.map(v => `
+                    <div class="var-card"><b>${v.name}</b>: ${v.value} <small>(${v.type})</small></div>
+                `).join('');
+            } catch (e) {
+                console.error('Refresh failed', e);
+            }
+        }
+        setInterval(refresh, 2000);
+        refresh();
+    </script>
+</body>
+</html>

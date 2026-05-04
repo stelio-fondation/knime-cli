@@ -5,3 +5,4 @@ node_modules/
 .vscode/
 samples/.metadata/
 *.html
+!src/resources/*.html
