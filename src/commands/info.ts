@@ -9,6 +9,8 @@ import { parseWorkflowMetadata, WorkflowMetadata } from '../utils/knime-parser';
 interface InfoOptions {
   workflow: string;
   path?: string;
+  json?: boolean;
+  out?: string;
 }
 
 function displayInfo(metadata: WorkflowMetadata, systemInfo: { path: string, size: number, mtime: Date }) {
@@ -37,7 +39,7 @@ function displayInfo(metadata: WorkflowMetadata, systemInfo: { path: string, siz
   console.log('');
 }
 
-function getWorkflowInfo(targetPath: string, isDir: boolean) {
+function getWorkflowInfo(targetPath: string, isDir: boolean, options: InfoOptions) {
   const stats = fs.statSync(targetPath);
   const fallbackName = path.basename(targetPath, path.extname(targetPath));
   let xmlData = '';
@@ -65,7 +67,17 @@ function getWorkflowInfo(targetPath: string, isDir: boolean) {
   if (xmlData) {
     try {
       const metadata = parseWorkflowMetadata(xmlData, fallbackName);
-      displayInfo(metadata, { path: targetPath, size: stats.size, mtime: stats.mtime });
+      if (options.json) {
+        const output = JSON.stringify({ systemInfo: { path: targetPath, size: stats.size, mtime: stats.mtime }, metadata }, null, 2);
+        if (options.out) {
+          fs.writeFileSync(options.out, output, 'utf8');
+          console.log(chalk.green(`\n✅ Export JSON sauvegardé dans ${options.out}`));
+        } else {
+          console.log(output);
+        }
+      } else {
+        displayInfo(metadata, { path: targetPath, size: stats.size, mtime: stats.mtime });
+      }
     } catch (err) {
       console.error(chalk.red('\nError: Failed to parse KNIME metadata.'));
     }
@@ -82,10 +94,12 @@ export const infoCommand = new Command('info')
   .description('Affiche les détails d\'un workflow KNIME')
   .requiredOption('-w, --workflow <name>', 'Nom du workflow')
   .option('-p, --path <path>', 'Chemin du dossier contenant le workflow', '.')
+  .option('--json', 'Exporte les métadonnées au format JSON')
+  .option('--out <file>', 'Sauvegarde la sortie JSON dans un fichier')
   .action(async (options: InfoOptions) => {
     try {
       const target = resolveWorkflowPath(options.workflow, options.path);
-      getWorkflowInfo(target.targetPath, target.workflowArg === '-workflowDir');
+      getWorkflowInfo(target.targetPath, target.workflowArg === '-workflowDir', options);
     } catch (err: any) {
       console.error(chalk.red(`❌ Error: ${err.message}`));
       process.exit(1);
