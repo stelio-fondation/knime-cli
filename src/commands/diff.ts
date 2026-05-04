@@ -7,6 +7,7 @@ interface DiffOptions {
   w2: string;
   path1?: string;
   path2?: string;
+  html?: string;
 }
 
 export const diffCommand = new Command('diff')
@@ -15,6 +16,7 @@ export const diffCommand = new Command('diff')
   .requiredOption('--w2 <name>', 'Deuxième workflow')
   .option('--p1 <path>', 'Chemin du premier workflow', '.')
   .option('--p2 <path>', 'Chemin du deuxième workflow', '.')
+  .option('--html <file>', 'Génère un rapport de comparaison au format HTML')
   .action(async (options: any) => {
     try {
       console.log(chalk.bold(`\nComparing workflows...`));
@@ -23,6 +25,24 @@ export const diffCommand = new Command('diff')
 
       const meta1 = await getWorkflowMetadata(options.w1, options.p1);
       const meta2 = await getWorkflowMetadata(options.w2, options.p2);
+
+      let htmlReport = `
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+    .added { background-color: #e6ffed; color: #22863a; }
+    .removed { background-color: #ffeef0; color: #cb2431; }
+    .changed { background-color: #fff5b1; color: #b08800; }
+  </style>
+</head>
+<body>
+  <h2>Workflow Diff: ${options.w1} vs ${options.w2}</h2>
+`;
+      let nodesHtml = `<h3>Nodes</h3><table><tr><th>ID</th><th>Status</th><th>Details</th></tr>`;
 
       // 1. Comparaison des Nœuds
       console.log(chalk.bold.blue('=== Nodes Comparison ==='));
@@ -39,12 +59,15 @@ export const diffCommand = new Command('diff')
 
         if (!name1) {
           console.log(chalk.green(`  [+] Node ${id}: ${name2} (Added)`));
+          nodesHtml += `<tr class="added"><td>${id}</td><td>Added</td><td>${name2}</td></tr>`;
           hasNodeChanges = true;
         } else if (!name2) {
           console.log(chalk.red(`  [-] Node ${id}: ${name1} (Removed)`));
+          nodesHtml += `<tr class="removed"><td>${id}</td><td>Removed</td><td>${name1}</td></tr>`;
           hasNodeChanges = true;
         } else if (name1 !== name2) {
           console.log(chalk.yellow(`  [*] Node ${id}: ${name1} -> ${name2} (Renamed/Changed)`));
+          nodesHtml += `<tr class="changed"><td>${id}</td><td>Changed</td><td>${name1} &rarr; ${name2}</td></tr>`;
           hasNodeChanges = true;
         }
       });
@@ -60,6 +83,7 @@ export const diffCommand = new Command('diff')
 
       const allVarNames = Array.from(new Set([...vars1.keys(), ...vars2.keys()])).sort();
       let hasVarChanges = false;
+      let variablesHtml = `<h3>Variables</h3><table><tr><th>Name</th><th>Status</th><th>Details</th></tr>`;
 
       allVarNames.forEach(name => {
         const v1 = vars1.get(name);
@@ -67,18 +91,30 @@ export const diffCommand = new Command('diff')
 
         if (!v1) {
           console.log(chalk.green(`  [+] Variable ${name}: ${v2?.value} (Added)`));
+          variablesHtml += `<tr class="added"><td>${name}</td><td>Added</td><td>${v2?.value}</td></tr>`;
           hasVarChanges = true;
         } else if (!v2) {
           console.log(chalk.red(`  [-] Variable ${name} (Removed)`));
+          variablesHtml += `<tr class="removed"><td>${name}</td><td>Removed</td><td>${v1.value}</td></tr>`;
           hasVarChanges = true;
         } else if (v1.value !== v2.value || v1.type !== v2.type) {
           console.log(chalk.yellow(`  [*] Variable ${name}: ${v1.value} -> ${v2.value} (${v1.type} -> ${v2.type})`));
+          variablesHtml += `<tr class="changed"><td>${name}</td><td>Changed</td><td>${v1.value} &rarr; ${v2.value} (${v1.type} &rarr; ${v2.type})</td></tr>`;
           hasVarChanges = true;
         }
       });
 
       if (!hasVarChanges) {
         console.log(chalk.gray('  No variable changes detected.'));
+      }
+
+      if (options.html) {
+        nodesHtml += `</table>`;
+        variablesHtml += `</table>`;
+        htmlReport += nodesHtml + variablesHtml + `</body></html>`;
+        const fs = require('fs');
+        fs.writeFileSync(options.html, htmlReport, 'utf8');
+        console.log(chalk.green(`\n✅ Rapport HTML généré : ${options.html}`));
       }
 
       console.log('');
