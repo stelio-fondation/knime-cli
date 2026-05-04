@@ -5,3 +5,4 @@ dist/
 .worktrees/
 .vscode/
 samples/.metadata/
+*.html

@@ -68,7 +68,7 @@ function displayInfo(metadata, systemInfo) {
     }
     console.log('');
 }
-function getWorkflowInfo(targetPath, isDir) {
+function getWorkflowInfo(targetPath, isDir, options) {
     const stats = fs.statSync(targetPath);
     const fallbackName = path.basename(targetPath, path.extname(targetPath));
     let xmlData = '';
@@ -95,7 +95,19 @@ function getWorkflowInfo(targetPath, isDir) {
     if (xmlData) {
         try {
             const metadata = (0, knime_parser_1.parseWorkflowMetadata)(xmlData, fallbackName);
-            displayInfo(metadata, { path: targetPath, size: stats.size, mtime: stats.mtime });
+            if (options.json) {
+                const output = JSON.stringify({ systemInfo: { path: targetPath, size: stats.size, mtime: stats.mtime }, metadata }, null, 2);
+                if (options.out) {
+                    fs.writeFileSync(options.out, output, 'utf8');
+                    console.log(chalk_1.default.green(`\n✅ Export JSON sauvegardé dans ${options.out}`));
+                }
+                else {
+                    console.log(output);
+                }
+            }
+            else {
+                displayInfo(metadata, { path: targetPath, size: stats.size, mtime: stats.mtime });
+            }
         }
         catch (err) {
             console.error(chalk_1.default.red('\nError: Failed to parse KNIME metadata.'));
@@ -113,10 +125,12 @@ exports.infoCommand = new commander_1.Command('info')
     .description('Affiche les détails d\'un workflow KNIME')
     .requiredOption('-w, --workflow <name>', 'Nom du workflow')
     .option('-p, --path <path>', 'Chemin du dossier contenant le workflow', '.')
+    .option('--json', 'Exporte les métadonnées au format JSON')
+    .option('--out <file>', 'Sauvegarde la sortie JSON dans un fichier')
     .action(async (options) => {
     try {
         const target = (0, workflow_1.resolveWorkflowPath)(options.workflow, options.path);
-        getWorkflowInfo(target.targetPath, target.workflowArg === '-workflowDir');
+        getWorkflowInfo(target.targetPath, target.workflowArg === '-workflowDir', options);
     }
     catch (err) {
         console.error(chalk_1.default.red(`❌ Error: ${err.message}`));
