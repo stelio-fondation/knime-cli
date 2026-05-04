@@ -11,6 +11,8 @@ import { liveCommand } from './commands/live';
 import { diffCommand } from './commands/diff';
 import { reportCommand } from './commands/report';
 import { installSkillCommand } from './commands/install-skill';
+import { lineageCommand } from './commands/lineage';
+
 
 const program = new Command();
 
@@ -36,5 +38,7 @@ program.addCommand(liveCommand);
 program.addCommand(diffCommand);
 program.addCommand(reportCommand);
 program.addCommand(installSkillCommand);
+program.addCommand(lineageCommand);
+
 
 program.parse(process.argv);
